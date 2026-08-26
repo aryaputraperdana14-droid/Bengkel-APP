@@ -377,16 +377,23 @@
                             <input class="form-control" list="daftarBengkel" id="editLokasiBengkel" placeholder="Pilih atau ketik lokasi bengkel...">
                         </div>
                     </div>
-                    <div class="row mb-3 bg-light p-2 rounded mx-0">
-                        <div class="col-6">
-                            <p class="mb-1 text-muted small">Plat & Unit:</p>
-                            <span id="lblPlatLokasi" class="fw-bold"></span>
+
+                    <!-- Input Edit Plat, Unit, dan Tipe Kendaraan -->
+                    <div class="row mb-3 bg-light p-2 rounded mx-0 g-2">
+                        <div class="col-12 col-md-4">
+                            <label class="form-label small text-muted mb-1">Nomor Plat:</label>
+                            <input type="text" class="form-control form-control-sm fw-bold" id="editPlatNomor">
                         </div>
-                        <div class="col-6">
-                            <p class="mb-1 text-muted small">Kendaraan:</p>
-                            <span id="lblTipeMobil" class="fw-bold"></span>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label small text-muted mb-1">Unit:</label>
+                            <input type="text" class="form-control form-control-sm fw-bold" id="editLokasiKerja">
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label small text-muted mb-1">Merk / Tipe Mobil:</label>
+                            <input type="text" class="form-control form-control-sm fw-bold" id="editTipeMobil">
                         </div>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Progres Perbaikan</label>
                         <textarea class="form-control" id="editKeteranganPerbaikan" rows="3"></textarea>
@@ -802,8 +809,12 @@
             document.getElementById('editTanggalMasuk').value = cleanDate;
 
             document.getElementById('editLokasiBengkel').value = m.bengkel || '';
-            document.getElementById('lblPlatLokasi').innerText = `${m.plat || '-'} (${m.lokasi || '-'})`;
-            document.getElementById('lblTipeMobil').innerText = m.tipe || '-';
+            
+            // Masukkan data ke input edit
+            document.getElementById('editPlatNomor').value = m.plat || '';
+            document.getElementById('editLokasiKerja').value = m.lokasi || '';
+            document.getElementById('editTipeMobil').value = m.tipe || '';
+
             document.getElementById('editKeteranganPerbaikan').value = m.keterangan || '';
             document.getElementById('statusPengerjaan').value = m.status || 'Antre';
             document.getElementById('infoFotoEditTerpilih').innerText = '';
@@ -840,6 +851,12 @@
         function eksekusiSimpanPerubahan(m) {
             m.tanggal = document.getElementById('editTanggalMasuk').value;
             m.bengkel = document.getElementById('editLokasiBengkel').value;
+            
+            // Ambil nilai terbaru dari input edit
+            m.plat = document.getElementById('editPlatNomor').value.trim().toUpperCase();
+            m.lokasi = document.getElementById('editLokasiKerja').value.trim();
+            m.tipe = document.getElementById('editTipeMobil').value.trim();
+
             m.keterangan = document.getElementById('editKeteranganPerbaikan').value;
             m.status = document.getElementById('statusPengerjaan').value;
             
@@ -909,14 +926,12 @@
                 indexRekap++;
             }
 
-            // Total Keseluruhan persis seperti gambar yang Anda inginkan
             summaryHtml += `
                 <div class="mt-2 fw-bold" style="color: #000; font-size: 14px;">
                     TOTAL KESELURUHAN UNIT AKTIF : ${totalKeseluruhan} UNIT (Dikerjakan: ${totalDikerjakanAll} | Belum Dikerjakan: ${totalBelumDikerjakanAll})
                 </div>
             `;
 
-            // Bagian tanda tangan "Disusun Oleh, Ahmad Jamal" persis seperti gambar
             summaryHtml += `
                 <div class="row mt-4">
                     <div class="col-6"></div>
