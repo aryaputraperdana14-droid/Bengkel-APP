@@ -244,20 +244,8 @@
                 </div>
             </div>
 
-            <!-- Bagian Tanda Tangan di Halaman Pertama Laporan -->
-            <div class="mt-4 pt-2" style="color: #000; font-size: 13px;">
-                <div class="row text-center">
-                    <div class="col-6">
-                        <div>Mengetahui,</div>
-                        <div style="height: 55px;"></div>
-                        <div class="fw-bold text-decoration-underline">( ........................................ )</div>
-                    </div>
-                    <div class="col-6">
-                        <div>Dilaporkan oleh,</div>
-                        <div style="height: 55px;"></div>
-                        <div class="fw-bold text-decoration-underline">( ........................................ )</div>
-                    </div>
-                </div>
+            <div class="mt-auto fst-italic pb-2" style="color: #000; font-size: 14px;">
+                Berikut saya lampirkan juga foto - foto kendaraanya
             </div>
         </div>
 
@@ -885,6 +873,8 @@
 
             let rekapBengkel = {};
             let totalKeseluruhan = listBelumSelesai.length;
+            let totalDikerjakanAll = 0;
+            let totalBelumDikerjakanAll = 0;
 
             listBelumSelesai.forEach(m => {
                 let bName = m.bengkel ? m.bengkel.trim() : 'Tidak Diketahui';
@@ -904,6 +894,9 @@
                 let dikerjakan = (dataB.rincian['Dalam Pengerjaan'] || 0);
                 let belumDikerjakan = (dataB.total - dikerjakan);
 
+                totalDikerjakanAll += dikerjakan;
+                totalBelumDikerjakanAll += belumDikerjakan;
+
                 summaryHtml += `
                     <div class="mb-1" style="color: #000; font-size: 14px;">
                         <div class="fw-bold" style="color: #000;">${indexRekap}. JUMLAH MOBIL DI BENGKEL ${b.toUpperCase()} ${dataB.total} UNIT</div>
@@ -916,10 +909,22 @@
                 indexRekap++;
             }
 
-            // Tambahkan Total Keseluruhan Unit
+            // Total Keseluruhan persis seperti gambar yang Anda inginkan
             summaryHtml += `
-                <div class="mt-2 pt-2 border-top fw-bold" style="color: #000; font-size: 14px;">
-                    TOTAL KESELURUHAN UNIT AKTIF DI SEMUA BENGKEL: ${totalKeseluruhan} UNIT
+                <div class="mt-2 fw-bold" style="color: #000; font-size: 14px;">
+                    TOTAL KESELURUHAN UNIT AKTIF : ${totalKeseluruhan} UNIT (Dikerjakan: ${totalDikerjakanAll} | Belum Dikerjakan: ${totalBelumDikerjakanAll})
+                </div>
+            `;
+
+            // Bagian tanda tangan "Disusun Oleh, Ahmad Jamal" persis seperti gambar
+            summaryHtml += `
+                <div class="row mt-4">
+                    <div class="col-6"></div>
+                    <div class="col-6 text-center">
+                        <div style="font-size: 14px; color: #000;">Disusun Oleh,</div>
+                        <div style="height: 45px;"></div>
+                        <div class="fw-bold text-decoration-underline" style="font-size: 14px; color: #000;">Ahmad Jamal</div>
+                    </div>
                 </div>
             `;
 
