@@ -439,14 +439,9 @@
             if (!tanggalMasuk) return '-';
             
             let tglMasuk = new Date(tanggalMasuk);
-            
-            // Jika gagal dibaca langsung, coba parse manual dari string
             if (isNaN(tglMasuk.getTime())) {
-                let cleanStr = tanggalMasuk.toString().trim();
-                // Coba buat objek date standar
-                tglMasuk = new Date(Date.parse(cleanStr));
+                tglMasuk = new Date(Date.parse(tanggalMasuk));
             }
-        
             if (isNaN(tglMasuk.getTime())) return '-';
             
             const hariIni = new Date();
@@ -777,16 +772,20 @@
                 let tglVal = '-';
                 if (m.tanggal) {
                     let d = new Date(m.tanggal);
+                    if (isNaN(d.getTime())) {
+                        d = new Date(Date.parse(m.tanggal));
+                    }
                     if (!isNaN(d.getTime())) {
                         let year = d.getFullYear();
                         let month = String(d.getMonth() + 1).padStart(2, '0');
                         let day = String(d.getDate()).padStart(2, '0');
                         tglVal = `${year}-${month}-${day}`;
                     } else {
-                        tglVal = m.tanggal.toString().substring(0, 15);
+                        tglVal = m.tanggal.toString().substring(0, 10);
                     }
                 }
-                                let durasiStr = hitungDurasiHari(m.tanggal);
+
+                let durasiStr = hitungDurasiHari(m.tanggal);
 
                 let platVal = m.plat || '-';
                 let tipeVal = m.tipe || '-';
@@ -827,12 +826,17 @@
             
             let cleanDate = '';
             if (m.tanggal) {
-                let cleanStr = m.tanggal.toString().substring(0, 10);
-                let parts = cleanStr.split('-');
-                if (parts.length === 3) {
-                    cleanDate = `${parts[0]}-${parts[1]}-${parts[2]}`;
+                let d = new Date(m.tanggal);
+                if (isNaN(d.getTime())) {
+                    d = new Date(Date.parse(m.tanggal));
+                }
+                if (!isNaN(d.getTime())) {
+                    let year = d.getFullYear();
+                    let month = String(d.getMonth() + 1).padStart(2, '0');
+                    let day = String(d.getDate()).padStart(2, '0');
+                    cleanDate = `${year}-${month}-${day}`;
                 } else {
-                    cleanDate = cleanStr;
+                    cleanDate = m.tanggal.toString().substring(0, 10);
                 }
             }
             document.getElementById('editTanggalMasuk').value = cleanDate;
@@ -991,12 +995,17 @@
                     
                     let tglClean = '-';
                     if (m.tanggal) {
-                        let cleanStr = m.tanggal.toString().substring(0, 10);
-                        let parts = cleanStr.split('-');
-                        if (parts.length === 3) {
-                            tglClean = `${parts[0]}-${parts[1]}-${parts[2]}`;
+                        let d = new Date(m.tanggal);
+                        if (isNaN(d.getTime())) {
+                            d = new Date(Date.parse(m.tanggal));
+                        }
+                        if (!isNaN(d.getTime())) {
+                            let year = d.getFullYear();
+                            let month = String(d.getMonth() + 1).padStart(2, '0');
+                            let day = String(d.getDate()).padStart(2, '0');
+                            tglClean = `${year}-${month}-${day}`;
                         } else {
-                            tglClean = cleanStr;
+                            tglClean = m.tanggal.toString().substring(0, 10);
                         }
                     }
 
@@ -1026,7 +1035,7 @@
                                 </div>
                             </div>
 
-                            <div class="row" style="font-size: 11px; color: #000;">
+                            <div class="row" style="font-size: 11px; color: #000;">data-id
                                 <div class="col-8">
                                     <span class="d-block" style="font-size: 9px; color: #333;">Progres Perbaikan:</span>
                                     <div class="p-1 border rounded bg-white" style="min-height: 25px; font-size: 11px; color: #000;">${m.keterangan || '-'}</div>
