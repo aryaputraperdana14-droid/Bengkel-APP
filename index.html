@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aplikasi Bengkel Mandiri (Mobile Friendly)</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome untuk Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-size: 14px;
+            background-color: #f8f9fa;
+        }
+        .navbar-brand {
+            font-size: 1rem !important;
+        }
+        .btn-sm {
+            padding: 0.35rem 0.6rem;
+            font-size: 0.85rem;
+        }
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        table th, table td {
+            white-space: nowrap;
+            vertical-align: middle !important;
+        }
+        /* Styling Khusus untuk Mode Cetak / PDF */
+        @media print {
+            @page {
+                size: legal;
+                margin: 10mm;
+            }
+            body * {
+                visibility: hidden;
+            }
+            #printReportArea, #printReportArea * {
+                visibility: visible;
+            }
+            #printReportArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white;
+            }
+            .no-print {
+                display: none !important;
+            }
+            
+            #printReportHeaderSection {
+                page-break-after: always;
+                break-after: page;
+                width: 100%;
+                max-width: 16cm;
+                margin-left: auto;
+                margin-right: auto;
+                min-height: 94vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                box-sizing: border-box;
+                padding-bottom: 5mm;
+            }
+
+            .print-page-group {
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start; /* Rata ke atas jika foto sedikit/1 buah */
+                align-items: center;
+                min-height: 92vh;
+                page-break-after: always;
+                break-after: page;
+                box-sizing: border-box;
+                padding-top: 5mm;
+                padding-bottom: 5mm;
+            }
+
+            .print-card {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                border: none !important;
+                background: transparent !important;
+                box-shadow: none !important;
+                margin-bottom: 4mm !important;
+                padding: 1mm !important;
+                width: 100%;
+                max-width: 14cm;
+            }
+            
+            .print-card-title {
+                color: #000000 !important;
+                font-weight: 800 !important;
+            }
+
+            .print-card img {
+                width: 12.5cm !important;
+                height: 6.8cm !important;
+                object-fit: cover !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1"><i class="fas fa-car-wrench me-2"></i>Bengkel App</span>
+            <div class="d-flex gap-1 align-items-center">
+                <span id="syncStatus" class="badge bg-secondary me-1" style="font-size: 10px;">Menghubungkan...</span>
+                <button class="btn btn-outline-light btn-sm px-2" data-bs-toggle="modal" data-bs-target="#modalMasterBengkel" title="Master Bengkel">
+                    <i class="fas fa-warehouse"></i>
+                </button>
+                <button class="btn btn-outline-light btn-sm px-2" onclick="cetakLaporanBelumSelesai()" title="Cetak Laporan">
+                    <i class="fas fa-print"></i>
+                </button>
+                <button class="btn btn-primary btn-sm px-2" data-bs-toggle="modal" data-bs-target="#modalTambah" title="Tambah Mobil">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Konten Utama -->
+    <div class="container my-3 px-2">
+        
+        <!-- Statistik Ringkas & Total Berdasarkan Lokasi Bengkel dan Rincian Status -->
+        <div class="row g-2 mb-3">
+            <div class="col-12 col-md-4">
+                <div class="card bg-white border-0 shadow-sm p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1 small">Total di Bengkel</h6>
+                            <h3 id="statTotal" class="fw-bold mb-0">0</h3>
+                            <small class="text-muted" id="statProsesSub">Aktif: 0</small>
+                        </div>
+                        <div class="bg-primary text-white p-3 rounded-3"><i class="fas fa-car fa-2x"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-8">
+                <div class="card bg-white border-0 shadow-sm p-3 h-100">
+                    <h6 class="text-muted mb-2 small"><i class="fas fa-map-marker-alt me-1"></i> Total & Rincian Status Unit per Lokasi Bengkel</h6>
+                    <div id="statBengkelContainer" class="row g-2">
+                        <span class="text-muted small fst-italic">Memuat data lokasi bengkel...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="row g-2 mb-3 bg-white p-3 rounded shadow-sm">
+            <div class="col-12 col-md-5">
+                <label class="form-label small text-muted mb-1">Filter Lokasi Bengkel:</label>
+                <select class="form-select form-select-sm" id="filterBengkel" onchange="jalankanFilter()">
+                    <option value="">Semua Lokasi Bengkel</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-5">
+                <label class="form-label small text-muted mb-1">Filter Status Pengerjaan:</label>
+                <select class="form-select form-select-sm" id="filterStatus" onchange="jalankanFilter()">
+                    <option value="">Semua Status</option>
+                    <option value="Antre">Antre</option>
+                    <option value="Dalam Pengerjaan">Dalam Pengerjaan</option>
+                    <option value="Menunggu Sparepart">Menunggu Sparepart</option>
+                    <option value="Selesai">Selesai</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-2 d-flex align-items-end">
+                <button class="btn btn-outline-secondary btn-sm w-100 mt-1 mt-md-0" onclick="resetFilter()"><i class="fas fa-redo me-1"></i> Reset</button>
+            </div>
+        </div>
+
+        <!-- Tabel Daftar Mobil -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+                <h5 class="mb-0 fw-bold fs-6"><i class="fas fa-list me-2"></i>Daftar Kendaraan Masuk</h5>
+                <button class="btn btn-secondary btn-sm w-100 w-md-auto" onclick="cetakLaporanBelumSelesai()">
+                    <i class="fas fa-print me-1"></i> Cetak PDF Unit Belum Selesai
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Foto</th>
+                                <th>Tanggal Masuk</th>
+                                <th>No. Plat & Kendaraan</th>
+                                <th>Unit</th>
+                                <th>Lokasi Bengkel</th>
+                                <th>Perbaikan</th>
+                                <th>Status</th>
+                                <th class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelMobil">
+                            <tr><td colspan="8" class="text-center text-muted py-4">Mengambil data dari Google Drive...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AREA CETAK LAPORAN -->
+    <div id="printReportArea" class="d-none">
+        <div id="printReportHeaderSection">
+            <div>
+                <div class="text-center border-bottom pb-2 mb-2">
+                    <h5 class="fw-bold mb-1" style="color: #000;">LAPORAN KEGIATAN KUNJUNGAN KERJA DI BENGKEL CABIN</h5>
+                    <h5 class="fw-bold mb-2" style="color: #000;">PT KURNIA TUNGGAL NUGRAHA - SELINCAH</h5>
+                    <small class="text-muted d-block mb-2">Tanggal Cetak: <span id="printDate"></span></small>
+                    
+                    <br><br><br><br>
+
+                    <div class="text-start mt-2" style="font-size: 15px; color: #000;">
+                        <div class="fw-bold">Kepada YTH.</div>
+                        <div class="ps-2">
+                            1. Bapak Hariyanto<br>
+                            2. Bapak Kurniawan<br>
+                            3. Bapak Ayong
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fw-bold mb-2" style="font-size: 15px; color: #000;">Berikut Hasil Kunjungan:</div>
+
+                <div class="p-2 mb-3" style="font-size: 14px; background: transparent !important; border: none !important;">
+                    <div id="printSummaryBengkel"></div>
+                </div>
+            </div>
+
+            <div class="mt-auto fst-italic pb-2" style="color: #000; font-size: 14px;">
+                Berikut saya lampirkan juga foto - foto kendaraanya
+            </div>
+        </div>
+
+        <div id="printReportContainer"></div>
+    </div>
+
+    <!-- Datalist Dinamis untuk Lokasi Bengkel -->
+    <datalist id="daftarBengkel"></datalist>
+
+    <!-- Modal Kelola Master Bengkel -->
+    <div class="modal fade" id="modalMasterBengkel" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fs-6"><i class="fas fa-warehouse me-2"></i>Kelola Referensi Master Bengkel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="inputNamaBengkelBaru" placeholder="Nama Bengkel Baru...">
+                        <button class="btn btn-success" type="button" onclick="tambahMasterBengkel()"><i class="fas fa-plus me-1"></i> Tambah</button>
+                    </div>
+                    <label class="form-label small text-muted">Daftar Referensi Bengkel Saat Ini:</label>
+                    <ul class="list-group" id="listMasterBengkel" style="max-height: 250px; overflow-y: auto;">
+                        <!-- List dinamis -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tambah Mobil -->
+    <div class="modal fade" id="modalTambah" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fs-6"><i class="fas fa-plus-circle me-2"></i>Tambah Mobil Masuk</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Tanggal Masuk</label>
+                        <input type="date" class="form-control" id="tanggalMasuk">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nomor Polisi (Plat)</label>
+                        <input type="text" class="form-control" id="platNomor" placeholder="Contoh: B 1234 XYZ">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Merk / Tipe Mobil</label>
+                        <input type="text" class="form-control" id="tipeMobil" placeholder="Contoh: Ford EcoSport">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Unit</label>
+                        <input type="text" class="form-control" id="lokasiKerja" placeholder="Contoh: Unit A / Bagian Tertentu">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Lokasi Bengkel</label>
+                        <input class="form-control" list="daftarBengkel" id="lokasiBengkel" placeholder="Pilih atau ketik lokasi bengkel...">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Perbaikan</label>
+                        <textarea class="form-control" id="keteranganPerbaikan" rows="3" placeholder="Contoh: Perbaikan AC dan ganti kampas rem"></textarea>
+                    </div>
+                    
+                    <!-- 2 Opsi Tombol Foto Terpisah -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Foto Kendaraan / Kerusakan</label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="btn btn-outline-primary btn-sm w-100 py-2">
+                                    <i class="fas fa-camera me-1"></i> Buka Kamera
+                                    <input type="file" accept="image/*" capture="environment" class="d-none" onchange="prosesFotoPilihan(this)">
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <label class="btn btn-outline-secondary btn-sm w-100 py-2">
+                                    <i class="fas fa-image me-1"></i> Pilih Galeri
+                                    <input type="file" accept="image/*" class="d-none" onchange="prosesFotoPilihan(this)">
+                                </label>
+                            </div>
+                        </div>
+                        <div id="infoFotoTerpilih" class="text-success small mt-1 fst-italic text-center"></div>
+                    </div>
+
+                    <button type="button" class="btn btn-primary w-100" onclick="simpanDataBaru()">Simpan Data Mobil</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Update Status & Detail Pengerjaan -->
+    <div class="modal fade" id="modalDetail" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fs-6"><i class="fas fa-info-circle me-2"></i>Detail Kendaraan & Perbaikan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="detailId">
+                    
+                    <div class="text-center mb-3">
+                        <img id="lblFoto" src="" alt="Foto Kendaraan" class="img-fluid rounded border mb-2" style="max-height: 200px; display: none;">
+                        <div class="mt-2">
+                            <label class="form-label small text-muted">Ganti / Perbarui Foto:</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label class="btn btn-outline-primary btn-sm w-100 py-1">
+                                        <i class="fas fa-camera me-1"></i> Kamera
+                                        <input type="file" accept="image/*" capture="environment" class="d-none" onchange="prosesFotoEditPilihan(this)">
+                                    </label>
+                                </div>
+                                <div class="col-6">
+                                    <label class="btn btn-outline-secondary btn-sm w-100 py-1">
+                                        <i class="fas fa-image me-1"></i> Galeri
+                                        <input type="file" accept="image/*" class="d-none" onchange="prosesFotoEditPilihan(this)">
+                                    </label>
+                                </div>
+                            </div>
+                            <div id="infoFotoEditTerpilih" class="text-success small mt-1 fst-italic text-center"></div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-12 col-md-6 mb-2 mb-md-0">
+                            <label class="form-label">Tanggal Masuk</label>
+                            <input type="date" class="form-control" id="editTanggalMasuk">
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Lokasi Bengkel</label>
+                            <input class="form-control" list="daftarBengkel" id="editLokasiBengkel" placeholder="Pilih atau ketik lokasi bengkel...">
+                        </div>
+                    </div>
+                    <div class="row mb-3 bg-light p-2 rounded mx-0">
+                        <div class="col-6">
+                            <p class="mb-1 text-muted small">Plat & Unit:</p>
+                            <span id="lblPlatLokasi" class="fw-bold"></span>
+                        </div>
+                        <div class="col-6">
+                            <p class="mb-1 text-muted small">Kendaraan:</p>
+                            <span id="lblTipeMobil" class="fw-bold"></span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Perbaikan</label>
+                        <textarea class="form-control" id="editKeteranganPerbaikan" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status Pengerjaan</label>
+                        <select class="form-select" id="statusPengerjaan">
+                            <option value="Antre">Antre</option>
+                            <option value="Dalam Pengerjaan">Dalam Pengerjaan</option>
+                            <option value="Menunggu Sparepart">Menunggu Sparepart</option>
+                            <option value="Selesai">Selesai</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary w-100" onclick="simpanPerubahan()"><i class="fas fa-save me-1"></i> Simpan Perubahan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Script Aplikasi & Google Sheets Integration -->
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwoCm3Tax3nGVzbIvGVLlKYLQWlesOq9J7t6n6t-uqwopEIvLHpBbjTOqi58ad3y8uZ/exec";
+
+        let dataMobil = [];
+        let masterBengkel = JSON.parse(localStorage.getItem('bengkel_master_lokasi')) || ['Cabin', 'Central', 'Workshop Utama', 'Cabang Selincah'];
+        let fotoBase64Temp = "";
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('tanggalMasuk').value = today;
+            renderMasterBengkel();
+            renderDatalistBengkel();
+            updateFilterBengkelOptions();
+            muatDataDariGoogleDrive();
+        });
+
+        function muatDataDariGoogleDrive() {
+            document.getElementById('syncStatus').className = 'badge bg-warning text-dark me-2';
+            document.getElementById('syncStatus').innerText = 'Menyinkronkan...';
+
+            fetch(WEB_APP_URL)
+                .then(response => response.json())
+                .then(data => {
+                    dataMobil = Array.isArray(data) ? data : [];
+                    renderTabelDisesuaikan();
+                    document.getElementById('syncStatus').className = 'badge bg-success me-2';
+                    document.getElementById('syncStatus').innerText = 'Online';
+                })
+                .catch(error => {
+                    console.error('Gagal memuat data:', error);
+                    document.getElementById('syncStatus').className = 'badge bg-danger me-2';
+                    document.getElementById('syncStatus').innerText = 'Gagal Koneksi';
+                    document.getElementById('tabelMobil').innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">Gagal terhubung ke Google Drive. Periksa koneksi internet Anda.</td></tr>`;
+                });
+        }
+
+        function kirimAksiKeDriveBackground(action, rowData) {
+            document.getElementById('syncStatus').className = 'badge bg-warning text-dark me-2';
+            document.getElementById('syncStatus').innerText = 'Menyimpan...';
+
+            fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ action: action, data: rowData })
+            })
+            .then(() => {
+                document.getElementById('syncStatus').className = 'badge bg-success me-2';
+                document.getElementById('syncStatus').innerText = 'Online';
+            })
+            .catch(error => {
+                console.error('Gagal sinkronisasi background:', error);
+                document.getElementById('syncStatus').className = 'badge bg-danger me-2';
+                document.getElementById('syncStatus').innerText = 'Offline';
+            });
+        }
+
+        function simpanMasterKeStorage() {
+            localStorage.setItem('bengkel_master_lokasi', JSON.stringify(masterBengkel));
+            renderMasterBengkel();
+            renderDatalistBengkel();
+            updateFilterBengkelOptions();
+        }
+
+        function renderMasterBengkel() {
+            const listEl = document.getElementById('listMasterBengkel');
+            listEl.innerHTML = '';
+            if (masterBengkel.length === 0) {
+                listEl.innerHTML = `<li class="list-group-item text-muted small fst-italic text-center">Belum ada referensi bengkel.</li>`;
+                return;
+            }
+            masterBengkel.forEach((bengkel, index) => {
+                listEl.innerHTML += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                        <span>${bengkel}</span>
+                        <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="hapusMasterBengkel(${index})"><i class="fas fa-trash"></i></button>
+                    </li>
+                `;
+            });
+        }
+
+        function renderDatalistBengkel() {
+            const datalistEl = document.getElementById('daftarBengkel');
+            datalistEl.innerHTML = '';
+            masterBengkel.forEach(bengkel => {
+                datalistEl.innerHTML += `<option value="${bengkel}">`;
+            });
+        }
+
+        function updateFilterBengkelOptions() {
+            const selectFilter = document.getElementById('filterBengkel');
+            if (!selectFilter) return;
+            const currentValue = selectFilter.value;
+            selectFilter.innerHTML = `<option value="">Semua Lokasi Bengkel</option>`;
+            masterBengkel.forEach(bengkel => {
+                selectFilter.innerHTML += `<option value="${bengkel}">${bengkel}</option>`;
+            });
+            selectFilter.value = currentValue;
+        }
+
+        function jalankanFilter() {
+            renderTabelDisesuaikan();
+        }
+
+        function resetFilter() {
+            document.getElementById('filterBengkel').value = '';
+            document.getElementById('filterStatus').value = '';
+            renderTabelDisesuaikan();
+        }
+
+        function tambahMasterBengkel() {
+            const inputVal = document.getElementById('inputNamaBengkelBaru').value.trim();
+            if (!inputVal) {
+                alert('Nama bengkel tidak boleh kosong!');
+                return;
+            }
+            if (masterBengkel.map(b => b.toLowerCase()).includes(inputVal.toLowerCase())) {
+                alert('Nama bengkel tersebut sudah ada di dalam daftar referensi.');
+                return;
+            }
+            masterBengkel.push(inputVal);
+            simpanMasterKeStorage();
+            document.getElementById('inputNamaBengkelBaru').value = '';
+        }
+
+        function hapusMasterBengkel(index) {
+            if (confirm(`Yakin ingin menghapus "${masterBengkel[index]}" dari daftar referensi?`)) {
+                masterBengkel.splice(index, 1);
+                simpanMasterKeStorage();
+            }
+        }
+
+        function kompresDanSimpan(file, callback) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    const MAX_WIDTH = 500;
+                    if (width > MAX_WIDTH) {
+                        height = Math.round((height * MAX_WIDTH) / width);
+                        width = MAX_WIDTH;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.4);
+                    callback(compressedDataUrl);
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function prosesFotoPilihan(input) {
+            if (input.files && input.files[0]) {
+                kompresDanSimpan(input.files[0], function(compressedResult) {
+                    fotoBase64Temp = compressedResult;
+                    document.getElementById('infoFotoTerpilih').innerText = `✔ Foto berhasil dimuat dan siap disimpan`;
+                });
+            }
+        }
+
+        function prosesFotoEditPilihan(input) {
+            if (input.files && input.files[0]) {
+                kompresDanSimpan(input.files[0], function(compressedResult) {
+                    fotoBase64Temp = compressedResult;
+                    document.getElementById('infoFotoEditTerpilih').innerText = `✔ Foto baru siap diperbarui`;
+                });
+            }
+        }
+
+        function simpanDataBaru() {
+            const tanggal = document.getElementById('tanggalMasuk').value;
+            const plat = document.getElementById('platNomor').value.trim();
+            const tipe = document.getElementById('tipeMobil').value.trim();
+            const lokasi = document.getElementById('lokasiKerja').value.trim();
+            const bengkel = document.getElementById('lokasiBengkel').value.trim();
+            const keterangan = document.getElementById('keteranganPerbaikan').value.trim();
+
+            if (!plat || !tipe || !lokasi || !bengkel) {
+                alert('Mohon lengkapi data Plat, Tipe, Unit, dan Lokasi Bengkel terlebih dahulu!');
+                return;
+            }
+
+            if (!masterBengkel.map(b => b.toLowerCase()).includes(bengkel.toLowerCase())) {
+                masterBengkel.push(bengkel);
+                simpanMasterKeStorage();
+            }
+
+            eksekusiSimpan(fotoBase64Temp, tanggal, plat, tipe, lokasi, bengkel, keterangan);
+        }
+
+        function eksekusiSimpan(fotoBase64, tanggal, plat, tipe, lokasi, bengkel, keterangan) {
+            const mobilBaru = {
+                id: Date.now().toString(),
+                tanggal: tanggal,
+                plat: plat.toUpperCase(),
+                tipe: tipe,
+                lokasi: lokasi,
+                bengkel: bengkel,
+                keterangan: keterangan,
+                foto: fotoBase64 || '',
+                status: 'Antre'
+            };
+            
+            dataMobil.push(mobilBaru);
+            renderTabelDisesuaikan();
+
+            document.getElementById('platNomor').value = '';
+            document.getElementById('tipeMobil').value = '';
+            document.getElementById('lokasiKerja').value = '';
+            document.getElementById('lokasiBengkel').value = '';
+            document.getElementById('keteranganPerbaikan').value = '';
+            document.getElementById('infoFotoTerpilih').innerText = '';
+            fotoBase64Temp = "";
+            document.getElementById('tanggalMasuk').value = new Date().toISOString().split('T')[0];
+
+            const modalEl = document.getElementById('modalTambah');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) modalInstance.hide();
+
+            kirimAksiKeDriveBackground('add', mobilBaru);
+        }
+
+        function renderTabelDisesuaikan() {
+            const tbody = document.getElementById('tabelMobil');
+            tbody.innerHTML = '';
+            
+            const filterB = document.getElementById('filterBengkel') ? document.getElementById('filterBengkel').value : '';
+            const filterS = document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : '';
+
+            let dataFiltered = dataMobil.filter(m => {
+                let matchBengkel = filterB === '' || (m.bengkel && m.bengkel.toLowerCase() === filterB.toLowerCase());
+                let matchStatus = filterS === '' || ((m.status || 'Antre') === filterS);
+                return matchBengkel && matchStatus;
+            });
+
+            let total = dataMobil.length;
+            let belumSelesaiList = dataMobil.filter(m => (m.status || 'Antre') !== 'Selesai');
+
+            let rekapBengkel = {};
+            belumSelesaiList.forEach(m => {
+                let bName = m.bengkel ? m.bengkel.trim() : 'Tidak Diketahui';
+                let status = m.status || 'Antre';
+
+                if (!rekapBengkel[bName]) {
+                    rekapBengkel[bName] = { total: 0, rincian: {} };
+                }
+                rekapBengkel[bName].total += 1;
+                rekapBengkel[bName].rincian[status] = (rekapBengkel[bName].rincian[status] || 0) + 1;
+            });
+
+            let bengkelContainer = document.getElementById('statBengkelContainer');
+            bengkelContainer.innerHTML = '';
+            let keys = Object.keys(rekapBengkel);
+
+            if (keys.length === 0) {
+                bengkelContainer.innerHTML = `<span class="text-muted small fst-italic">Tidak ada unit aktif di bengkel saat ini.</span>`;
+            } else {
+                keys.forEach(b => {
+                    let dataB = rekapBengkel[b];
+                    let rincianStr = [];
+                    for (let stat in dataB.rincian) {
+                        rincianStr.push(`${stat}: ${dataB.rincian[stat]}`);
+                    }
+
+                    bengkelContainer.innerHTML += `
+                        <div class="col-12 col-sm-6">
+                            <div class="border rounded px-3 py-2 bg-light">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong class="text-dark small"><i class="fas fa-warehouse me-1"></i> ${b}</strong>
+                                    <span class="badge bg-primary">${dataB.total} Unit</span>
+                                </div>
+                                <div class="text-muted" style="font-size: 11px;">
+                                    ${rincianStr.join(' | ')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            if (dataFiltered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Tidak ada kendaraan yang sesuai dengan filter.</td></tr>`;
+                document.getElementById('statTotal').innerText = total;
+                document.getElementById('statProsesSub').innerText = `Aktif di bengkel: ${belumSelesaiList.length}`;
+                return;
+            }
+
+            dataFiltered.forEach(m => {
+                let badgeColor = 'bg-secondary';
+                let statusVal = m.status || 'Antre';
+                if (statusVal === 'Antre') badgeColor = 'bg-secondary';
+                if (statusVal === 'Dalam Pengerjaan') badgeColor = 'bg-warning text-dark';
+                if (statusVal === 'Menunggu Sparepart') badgeColor = 'bg-info text-dark';
+                if (statusVal === 'Selesai') badgeColor = 'bg-success';
+
+                let imgThumbnail = m.foto ? `<img src="${m.foto}" class="rounded" style="width: 40px; height: 40px; object-fit: cover;">` : `<span class="text-muted small">No Foto</span>`;
+
+                let tglVal = '-';
+                if (m.tanggal) {
+                    let d = new Date(m.tanggal);
+                    if (!isNaN(d.getTime())) {
+                        let year = d.getFullYear();
+                        let month = String(d.getMonth() + 1).padStart(2, '0');
+                        let day = String(d.getDate()).padStart(2, '0');
+                        tglVal = `${year}-${month}-${day}`;
+                    } else {
+                        tglVal = m.tanggal.toString().substring(0, 10);
+                    }
+                }
+
+                let platVal = m.plat || '-';
+                let tipeVal = m.tipe || '-';
+                let lokasiVal = m.lokasi || '-';
+                let bengkelVal = m.bengkel || '-';
+                let ketVal = m.keterangan || '-';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${imgThumbnail}</td>
+                        <td>${tglVal}</td>
+                        <td><span class="fw-bold">${platVal}</span><br><small class="text-muted">${tipeVal}</small></td>
+                        <td>${lokasiVal}</td>
+                        <td>${bengkelVal}</td>
+                        <td>${ketVal}</td>
+                        <td><span class="badge ${badgeColor}">${statusVal}</span></td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-outline-primary me-1 px-2 py-1" onclick="bukaDetail('${m.id}')"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-outline-danger px-2 py-1" onclick="hapusMobil('${m.id}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('statTotal').innerText = total;
+            document.getElementById('statProsesSub').innerText = `Aktif di bengkel: ${belumSelesaiList.length}`;
+        }
+
+        function bukaDetail(id) {
+            const m = dataMobil.find(item => item.id == id);
+            if (!m) return;
+
+            document.getElementById('detailId').value = m.id;
+            fotoBase64Temp = m.foto || "";
+            
+            let cleanDate = '';
+            if (m.tanggal) {
+                let d = new Date(m.tanggal);
+                if (!isNaN(d.getTime())) {
+                    let year = d.getFullYear();
+                    let month = String(d.getMonth() + 1).padStart(2, '0');
+                    let day = String(d.getDate()).padStart(2, '0');
+                    cleanDate = `${year}-${month}-${day}`;
+                } else {
+                    cleanDate = m.tanggal.toString().substring(0, 10);
+                }
+            }
+            document.getElementById('editTanggalMasuk').value = cleanDate;
+
+            document.getElementById('editLokasiBengkel').value = m.bengkel || '';
+            document.getElementById('lblPlatLokasi').innerText = `${m.plat || '-'} (${m.lokasi || '-'})`;
+            document.getElementById('lblTipeMobil').innerText = m.tipe || '-';
+            document.getElementById('editKeteranganPerbaikan').value = m.keterangan || '';
+            document.getElementById('statusPengerjaan').value = m.status || 'Antre';
+            document.getElementById('infoFotoEditTerpilih').innerText = '';
+
+            const imgElem = document.getElementById('lblFoto');
+            if (m.foto) {
+                imgElem.src = m.foto;
+                imgElem.style.display = 'inline-block';
+            } else {
+                imgElem.style.display = 'none';
+            }
+
+            new bootstrap.Modal(document.getElementById('modalDetail')).show();
+        }
+
+        function simpanPerubahan() {
+            const id = document.getElementById('detailId').value;
+            const m = dataMobil.find(item => item.id == id);
+            if (!m) return;
+
+            const bengkelBaru = document.getElementById('editLokasiBengkel').value.trim();
+            if (bengkelBaru && !masterBengkel.map(b => b.toLowerCase()).includes(bengkelBaru.toLowerCase())) {
+                masterBengkel.push(bengkelBaru);
+                simpanMasterKeStorage();
+            }
+
+            if (fotoBase64Temp) {
+                m.foto = fotoBase64Temp;
+            }
+
+            eksekusiSimpanPerubahan(m);
+        }
+
+        function eksekusiSimpanPerubahan(m) {
+            m.tanggal = document.getElementById('editTanggalMasuk').value;
+            m.bengkel = document.getElementById('editLokasiBengkel').value;
+            m.keterangan = document.getElementById('editKeteranganPerbaikan').value;
+            m.status = document.getElementById('statusPengerjaan').value;
+            
+            renderTabelDisesuaikan();
+            bootstrap.Modal.getInstance(document.getElementById('modalDetail')).hide();
+            fotoBase64Temp = "";
+
+            kirimAksiKeDriveBackground('update', m);
+        }
+
+        function cetakLaporanBelumSelesai() {
+            const listBelumSelesai = dataMobil.filter(m => (m.status || 'Antre') !== 'Selesai');
+
+            if (listBelumSelesai.length === 0) {
+                alert('Tidak ada kendaraan yang berstatus belum selesai di bengkel.');
+                return;
+            }
+
+            listBelumSelesai.sort((a, b) => {
+                let bengkelA = (a.bengkel || '').trim().toLowerCase();
+                let bengkelB = (b.bengkel || '').trim().toLowerCase();
+                
+                if (bengkelA < bengkelB) return -1;
+                if (bengkelA > bengkelB) return 1;
+                
+                let tglA = new Date(a.tanggal || 0);
+                let tglB = new Date(b.tanggal || 0);
+                return tglA - tglB;
+            });
+
+            let rekapBengkel = {};
+            listBelumSelesai.forEach(m => {
+                let bName = m.bengkel ? m.bengkel.trim() : 'Tidak Diketahui';
+                let status = m.status || 'Antre';
+
+                if (!rekapBengkel[bName]) {
+                    rekapBengkel[bName] = { total: 0, rincian: {} };
+                }
+                rekapBengkel[bName].total += 1;
+                rekapBengkel[bName].rincian[status] = (rekapBengkel[bName].rincian[status] || 0) + 1;
+            });
+
+            let summaryHtml = '';
+            let indexRekap = 1;
+            for (let b in rekapBengkel) {
+                let dataB = rekapBengkel[b];
+                let dikerjakan = (dataB.rincian['Dalam Pengerjaan'] || 0);
+                let belumDikerjakan = (dataB.total - dikerjakan);
+
+                summaryHtml += `
+                    <div class="mb-1" style="color: #000; font-size: 14px;">
+                        <div class="fw-bold" style="color: #000;">${indexRekap}. JUMLAH MOBIL DI BENGKEL ${b.toUpperCase()} ${dataB.total} UNIT</div>
+                        <div class="ms-3" style="color: #000;">
+                            • TOTAL UNIT YANG DIKERJAKAN : ${dikerjakan} UNIT<br>
+                            • TOTAL UNIT YANG BELUM DIKERJAKAN : ${belumDikerjakan} UNIT
+                        </div>
+                    </div>
+                `;
+                indexRekap++;
+            }
+
+            document.getElementById('printSummaryBengkel').innerHTML = summaryHtml;
+
+            const container = document.getElementById('printReportContainer');
+            container.innerHTML = '';
+
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('printDate').innerText = new Date().toLocaleDateString('id-ID', options);
+
+            let chunkedList = [];
+            for (let i = 0; i < listBelumSelesai.length; i += 3) {
+                chunkedList.push(listBelumSelesai.slice(i, i + 3));
+            }
+
+            chunkedList.forEach((group, pageIndex) => {
+                let pageDiv = document.createElement('div');
+                pageDiv.className = 'print-page-group';
+
+                let groupHtml = '';
+                
+                group.forEach((m, idxInGroup) => {
+                    let globalIndex = (pageIndex * 3) + idxInGroup;
+                    let imgPrint = m.foto ? `<img src="${m.foto}" class="rounded" style="width: 12.5cm; height: 6.8cm; object-fit: cover;">` : `<div class="rounded d-flex align-items-center justify-content-center text-muted fst-italic bg-light" style="width: 12.5cm; height: 6.8cm; margin: 0 auto;">Tidak ada foto</div>`;
+                    let tglClean = m.tanggal ? m.tanggal.toString().substring(0, 10) : '-';
+                    let namaBengkelUnit = m.bengkel ? m.bengkel.toUpperCase() : 'TIDAK DIKETAHUI';
+
+                    groupHtml += `
+                        <div class="print-card card p-1 mb-1">
+                            <div class="print-card-title mb-1" style="font-size: 11px; color: #000;">UNIT #${globalIndex + 1} - PLAT: ${m.plat || '-'} (${m.tipe || '-'})</div>
+                            
+                            <div class="text-center mb-1">
+                                ${imgPrint}
+                            </div>
+
+                            <div class="row border-top border-bottom py-1 mb-1 bg-light" style="font-size: 11px; color: #000;">
+                                <div class="col-4 border-end">
+                                    <span class="d-block" style="font-size: 9px; color: #333;">Tanggal Masuk:</span>
+                                    <strong style="color: #000;">${tglClean}</strong>
+                                </div>
+                                <div class="col-4 border-end">
+                                    <span class="d-block" style="font-size: 9px; color: #333;">Unit:</span>
+                                    <strong style="color: #000;">${m.lokasi || '-'}</strong>
+                                </div>
+                                <div class="col-4">
+                                    <span class="d-block" style="font-size: 9px; color: #333;">Lokasi Bengkel:</span>
+                                    <strong style="color: #000;">${namaBengkelUnit}</strong>
+                                </div>
+                            </div>
+
+                            <div class="row" style="font-size: 11px; color: #000;">
+                                <div class="col-8">
+                                    <span class="d-block" style="font-size: 9px; color: #333;">Perbaikan:</span>
+                                    <div class="p-1 border rounded bg-white" style="min-height: 25px; font-size: 11px; color: #000;">${m.keterangan || '-'}</div>
+                                </div>
+                                <div class="col-4">
+                                    <span class="d-block" style="font-size: 9px; color: #333;">Status Pengerjaan:</span>
+                                    <div class="p-1 border rounded bg-white text-center fw-bold d-flex align-items-center justify-content-center" style="min-height: 25px; font-size: 11px; color: #000;">
+                                        ${m.status || 'Antre'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                pageDiv.innerHTML = groupHtml;
+                container.appendChild(pageDiv);
+            });
+
+            const reportArea = document.getElementById('printReportArea');
+            reportArea.classList.remove('d-none');
+            
+            window.print();
+
+            reportArea.classList.add('d-none');
+        }
+
+        function hapusMobil(id) {
+            if (confirm('Yakin ingin menghapus data kendaraan ini?')) {
+                dataMobil = dataMobil.filter(item => item.id != id);
+                renderTabelDisesuaikan();
+
+                kirimAksiKeDriveBackground('delete', { id: id });
+            }
+        }
+    </script>
+</body>
+</html>
