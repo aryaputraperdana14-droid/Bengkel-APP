@@ -450,12 +450,29 @@
             tglMasuk.setHours(0, 0, 0, 0);
             hariIni.setHours(0, 0, 0, 0);
             
-            const selisihWaktu = hariIni - tglMasuk;
-            const selisihHari = Math.round(selisihWaktu / (1000 * 60 * 60 * 24));
-            
-            if (selisihHari < 0) return 'Hari ini';
-            if (selisihHari === 0) return 'Hari ini (0 hari)';
-            return `${selisihHari} hari di bengkel`;
+            if (hariIni < tglMasuk) return 'Hari ini (0 hari)';
+
+            let years = hariIni.getFullYear() - tglMasuk.getFullYear();
+            let months = hariIni.getMonth() - tglMasuk.getMonth();
+            let days = hariIni.getDate() - tglMasuk.getDate();
+
+            if (days < 0) {
+                months--;
+                let prevMonth = new Date(hariIni.getFullYear(), hariIni.getMonth(), 0);
+                days += prevMonth.getDate();
+            }
+
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+
+            let hasil = [];
+            if (years > 0) hasil.push(`${years} tahun`);
+            if (months > 0) hasil.push(`${months} bulan`);
+            if (days > 0 || (years === 0 && months === 0)) hasil.push(`${days} hari`);
+
+            return hasil.join(' ') + ' di bengkel';
         }
 
         function muatDataDariGoogleDrive() {
@@ -467,7 +484,6 @@
                 .then(data => {
                     dataMobil = Array.isArray(data) ? data : [];
                     
-                    // PEMBERSIHAN TANGGAL: Perbaiki jika ada teks format tanpa tahun
                     dataMobil.forEach(m => {
                         if (m.tanggal) {
                             let strTgl = m.tanggal.toString();
