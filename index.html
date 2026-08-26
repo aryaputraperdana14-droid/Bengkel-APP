@@ -885,7 +885,7 @@
                 
                 group.forEach((m, idxInGroup) => {
                     let globalIndex = (pageIndex * 3) + idxInGroup;
-                    let imgPrint = m.foto ? `<img src="${m.foto}" class="rounded" style="width: 14cm; height: 7.5cm; object-fit: cover;">` : `<div class="rounded d-flex align-items-center justify-content-center text-muted fst-italic bg-light" style="width: 14cm; height: 7.5cm; margin: 0 auto;">Tidak ada foto</div>`;
+                    let imgPrint = m.foto ? `<img src="${m.foto}" class="rounded" style="width: 14cm; height: 7.5cm; object-fit: cover;" crossorigin="anonymous">` : `<div class="rounded d-flex align-items-center justify-content-center text-muted fst-italic bg-light" style="width: 14cm; height: 7.5cm; margin: 0 auto;">Tidak ada foto</div>`;
                     let tglClean = m.tanggal ? m.tanggal.toString().substring(0, 10) : '-';
                     let namaBengkelUnit = m.bengkel ? m.bengkel.toUpperCase() : 'TIDAK DIKETAHUI';
 
@@ -931,6 +931,41 @@
                 pageDiv.innerHTML = groupHtml;
                 container.appendChild(pageDiv);
             });
+
+            const loadingEl = document.getElementById('loadingPdf');
+            const reportArea = document.getElementById('printReportArea');
+            
+            // Tampilkan elemen secara block tapi diposisikan off-screen agar siap dirender dengan sempurna
+            loadingEl.style.display = 'flex';
+            reportArea.style.display = 'block';
+            reportArea.style.position = 'absolute';
+            reportArea.style.left = '0';
+            reportArea.style.top = '0';
+            reportArea.style.zIndex = '-1000';
+
+            const opt = {
+                margin:       10,
+                filename:     `Laporan_Bengkel_${new Date().toISOString().split('T')[0]}.pdf`,
+                image:        { type: 'jpeg', quality: 0.95 },
+                html2canvas:  { scale: 1.5, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'legal', orientation: 'portrait' }
+            };
+
+            // Berikan jeda waktu sesaat (setTimeout) agar DOM dan gambar selesai dimuat sebelum html2pdf mengambil snapshot
+            setTimeout(() => {
+                html2pdf().from(reportArea).set(opt).save().then(() => {
+                    reportArea.style.display = 'none';
+                    reportArea.style.position = 'absolute';
+                    reportArea.style.left = '-9999px';
+                    loadingEl.style.display = 'none';
+                }).catch(err => {
+                    console.error('Gagal generate PDF:', err);
+                    alert('Terjadi kesalahan saat mengunduh PDF.');
+                    reportArea.style.display = 'none';
+                    loadingEl.style.display = 'none';
+                });
+            }, 800); // Jeda 0.8 detik agar HP sempat memproses render gambar
+        }
 
             // Tampilkan loading indicator
             const loadingEl = document.getElementById('loadingPdf');
