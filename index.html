@@ -437,12 +437,20 @@
 
         function hitungDurasiHari(tanggalMasuk) {
             if (!tanggalMasuk) return '-';
-            const tglMasuk = new Date(tanggalMasuk);
+            let cleanDateStr = tanggalMasuk.toString().substring(0, 10);
+            const parts = cleanDateStr.split('-');
+            
+            if (parts.length !== 3) return '-';
+            
+            let year = parseInt(parts[0], 10);
+            let month = parseInt(parts[1], 10) - 1;
+            let day = parseInt(parts[2], 10);
+            
+            const tglMasuk = new Date(year, month, day);
             const hariIni = new Date();
             
-            // Reset jam agar perbandingan akurat berdasarkan hari
-            tglMasuk.setHours(0,0,0,0);
-            hariIni.setHours(0,0,0,0);
+            tglMasuk.setHours(0, 0, 0, 0);
+            hariIni.setHours(0, 0, 0, 0);
             
             const selisihWaktu = hariIni - tglMasuk;
             const selisihHari = Math.round(selisihWaktu / (1000 * 60 * 60 * 24));
@@ -766,14 +774,12 @@
 
                 let tglVal = '-';
                 if (m.tanggal) {
-                    let d = new Date(m.tanggal);
-                    if (!isNaN(d.getTime())) {
-                        let year = d.getFullYear();
-                        let month = String(d.getMonth() + 1).padStart(2, '0');
-                        let day = String(d.getDate()).padStart(2, '0');
-                        tglVal = `${year}-${month}-${day}`;
+                    let cleanStr = m.tanggal.toString().substring(0, 10);
+                    let parts = cleanStr.split('-');
+                    if (parts.length === 3) {
+                        tglVal = `${parts[0]}-${parts[1]}-${parts[2]}`;
                     } else {
-                        tglVal = m.tanggal.toString().substring(0, 10);
+                        tglVal = cleanStr;
                     }
                 }
 
@@ -818,14 +824,12 @@
             
             let cleanDate = '';
             if (m.tanggal) {
-                let d = new Date(m.tanggal);
-                if (!isNaN(d.getTime())) {
-                    let year = d.getFullYear();
-                    let month = String(d.getMonth() + 1).padStart(2, '0');
-                    let day = String(d.getDate()).padStart(2, '0');
-                    cleanDate = `${year}-${month}-${day}`;
+                let cleanStr = m.tanggal.toString().substring(0, 10);
+                let parts = cleanStr.split('-');
+                if (parts.length === 3) {
+                    cleanDate = `${parts[0]}-${parts[1]}-${parts[2]}`;
                 } else {
-                    cleanDate = m.tanggal.toString().substring(0, 10);
+                    cleanDate = cleanStr;
                 }
             }
             document.getElementById('editTanggalMasuk').value = cleanDate;
@@ -981,7 +985,18 @@
                 group.forEach((m, idxInGroup) => {
                     let globalIndex = (pageIndex * 3) + idxInGroup;
                     let imgPrint = m.foto ? `<img src="${m.foto}" class="rounded" style="width: 12.5cm; height: 6.8cm; object-fit: cover;">` : `<div class="rounded d-flex align-items-center justify-content-center text-muted fst-italic bg-light" style="width: 12.5cm; height: 6.8cm; margin: 0 auto;">Tidak ada foto</div>`;
-                    let tglClean = m.tanggal ? m.tanggal.toString().substring(0, 10) : '-';
+                    
+                    let tglClean = '-';
+                    if (m.tanggal) {
+                        let cleanStr = m.tanggal.toString().substring(0, 10);
+                        let parts = cleanStr.split('-');
+                        if (parts.length === 3) {
+                            tglClean = `${parts[0]}-${parts[1]}-${parts[2]}`;
+                        } else {
+                            tglClean = cleanStr;
+                        }
+                    }
+
                     let durasiCetak = hitungDurasiHari(m.tanggal);
                     let namaBengkelUnit = m.bengkel ? m.bengkel.toUpperCase() : 'TIDAK DIKETAHUI';
 
