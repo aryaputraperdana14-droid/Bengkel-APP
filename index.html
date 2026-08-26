@@ -198,7 +198,8 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Foto</th>
-                                <th>Tanggal Masuk & Durasi</th>
+                                <th>Tanggal Masuk</th>
+                                <th>Durasi</th>
                                 <th>No. Plat & Kendaraan</th>
                                 <th>Unit</th>
                                 <th>Lokasi Bengkel</th>
@@ -208,7 +209,7 @@
                             </tr>
                         </thead>
                         <tbody id="tabelMobil">
-                            <tr><td colspan="8" class="text-center text-muted py-4">Mengambil data dari Google Drive...</td></tr>
+                            <tr><td colspan="9" class="text-center text-muted py-4">Mengambil data dari Google Drive...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -465,6 +466,23 @@
                 .then(response => response.json())
                 .then(data => {
                     dataMobil = Array.isArray(data) ? data : [];
+                    
+                    // PEMBERSIHAN TANGGAL: Perbaiki jika ada teks format tanpa tahun
+                    dataMobil.forEach(m => {
+                        if (m.tanggal) {
+                            let strTgl = m.tanggal.toString();
+                            if (strTgl.includes('2001') || isNaN(new Date(strTgl).getTime()) || strTgl.length < 8) {
+                                let parsed = new Date(Date.parse(strTgl + " 2026"));
+                                if (!isNaN(parsed.getTime())) {
+                                    let y = parsed.getFullYear();
+                                    let mo = String(parsed.getMonth() + 1).padStart(2, '0');
+                                    let da = String(parsed.getDate()).padStart(2, '0');
+                                    m.tanggal = `${y}-${mo}-${da}`;
+                                }
+                            }
+                        }
+                    });
+
                     updateFilterUnitOptions();
                     renderTabelDisesuaikan();
                     document.getElementById('syncStatus').className = 'badge bg-success me-2';
@@ -474,7 +492,7 @@
                     console.error('Gagal memuat data:', error);
                     document.getElementById('syncStatus').className = 'badge bg-danger me-2';
                     document.getElementById('syncStatus').innerText = 'Gagal Koneksi';
-                    document.getElementById('tabelMobil').innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">Gagal terhubung ke Google Drive. Periksa koneksi internet Anda.</td></tr>`;
+                    document.getElementById('tabelMobil').innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">Gagal terhubung ke Google Drive. Periksa koneksi internet Anda.</td></tr>`;
                 });
         }
 
@@ -753,7 +771,7 @@
             }
 
             if (dataFiltered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Tidak ada kendaraan yang sesuai dengan filter.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">Tidak ada kendaraan yang sesuai dengan filter.</td></tr>`;
                 document.getElementById('statTotal').innerText = total;
                 document.getElementById('statProsesSub').innerText = `Aktif di bengkel: ${belumSelesaiList.length}`;
                 return;
@@ -796,10 +814,8 @@
                 tbody.innerHTML += `
                     <tr>
                         <td>${imgThumbnail}</td>
-                        <td>
-                            <strong>${tglVal}</strong><br>
-                            <span class="badge bg-light text-dark border" style="font-size: 10px;"><i class="fas fa-clock text-primary me-1"></i>${durasiStr}</span>
-                        </td>
+                        <td><strong>${tglVal}</strong></td>
+                        <td><span class="badge bg-light text-dark border" style="font-size: 11px;"><i class="fas fa-clock text-primary me-1"></i>${durasiStr}</span></td>
                         <td><span class="fw-bold">${platVal}</span><br><small class="text-muted">${tipeVal}</small></td>
                         <td>${lokasiVal}</td>
                         <td>${bengkelVal}</td>
@@ -1035,7 +1051,7 @@
                                 </div>
                             </div>
 
-                            <div class="row" style="font-size: 11px; color: #000;">data-id
+                            <div class="row" style="font-size: 11px; color: #000;">
                                 <div class="col-8">
                                     <span class="d-block" style="font-size: 9px; color: #333;">Progres Perbaikan:</span>
                                     <div class="p-1 border rounded bg-white" style="min-height: 25px; font-size: 11px; color: #000;">${m.keterangan || '-'}</div>
