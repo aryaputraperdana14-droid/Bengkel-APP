@@ -935,7 +935,6 @@
             const loadingEl = document.getElementById('loadingPdf');
             const reportArea = document.getElementById('printReportArea');
             
-            // Tampilkan elemen secara block tapi diposisikan off-screen agar siap dirender dengan sempurna
             loadingEl.style.display = 'flex';
             reportArea.style.display = 'block';
             reportArea.style.position = 'absolute';
@@ -951,7 +950,6 @@
                 jsPDF:        { unit: 'mm', format: 'legal', orientation: 'portrait' }
             };
 
-            // Berikan jeda waktu sesaat (setTimeout) agar DOM dan gambar selesai dimuat sebelum html2pdf mengambil snapshot
             setTimeout(() => {
                 html2pdf().from(reportArea).set(opt).save().then(() => {
                     reportArea.style.display = 'none';
@@ -964,35 +962,7 @@
                     reportArea.style.display = 'none';
                     loadingEl.style.display = 'none';
                 });
-            }, 800); // Jeda 0.8 detik agar HP sempat memproses render gambar
-        }
-
-            // Tampilkan loading indicator
-            const loadingEl = document.getElementById('loadingPdf');
-            const reportArea = document.getElementById('printReportArea');
-            
-            loadingEl.style.display = 'flex';
-            reportArea.style.display = 'block';
-
-            // Opsi html2pdf
-            const opt = {
-                margin:       10,
-                filename:     `Laporan_Bengkel_${new Date().toISOString().split('T')[0]}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
-                jsPDF:        { unit: 'mm', format: 'legal', orientation: 'portrait' }
-            };
-
-            // Generate dan download PDF secara otomatis
-            html2pdf().from(reportArea).set(opt).save().then(() => {
-                reportArea.style.display = 'none';
-                loadingEl.style.display = 'none';
-            }).catch(err => {
-                console.error('Gagal generate PDF:', err);
-                alert('Terjadi kesalahan saat mengunduh PDF.');
-                reportArea.style.display = 'none';
-                loadingEl.style.display = 'none';
-            });
+            }, 800);
         }
 
         function hapusMobil(id) {
