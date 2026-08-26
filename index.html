@@ -8,6 +8,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome untuk Icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2pdf.js Library untuk Download PDF langsung di HP/PC -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
         body {
@@ -29,79 +31,64 @@
             white-space: nowrap;
             vertical-align: middle !important;
         }
-        /* Styling Khusus untuk Mode Cetak / PDF */
-        @media print {
-            @page {
-                size: legal;
-                margin: 10mm;
-            }
-            body * {
-                visibility: hidden;
-            }
-            #printReportArea, #printReportArea * {
-                visibility: visible;
-            }
-            #printReportArea {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                background: white;
-            }
-            .no-print {
-                display: none !important;
-            }
-            
-            #printReportHeaderSection {
-                page-break-after: always;
-                break-after: page;
-                width: 100%;
-                max-width: 16cm;
-                margin-left: auto;
-                margin-right: auto;
-                min-height: 94vh;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-                box-sizing: border-box;
-                padding-bottom: 5mm;
-            }
 
-            .print-page-group {
-                display: flex;
-                flex-direction: column;
-                justify-content: flex-start; /* Rata ke atas jika foto sedikit/1 buah */
-                align-items: center;
-                min-height: 92vh;
-                page-break-after: always;
-                break-after: page;
-                box-sizing: border-box;
-                padding-top: 5mm;
-                padding-bottom: 5mm;
-            }
+        /* Styling Khusus untuk Area Laporan PDF */
+        #printReportArea {
+            background: white;
+            color: #000;
+            padding: 15px;
+            font-family: Arial, sans-serif;
+        }
+        
+        #printReportHeaderSection {
+            width: 100%;
+            max-width: 18cm;
+            margin-left: auto;
+            margin-right: auto;
+            box-sizing: border-box;
+            page-break-after: always;
+            break-after: page;
+        }
 
-            .print-card {
-                page-break-inside: avoid;
-                break-inside: avoid;
-                border: none !important;
-                background: transparent !important;
-                box-shadow: none !important;
-                margin-bottom: 4mm !important;
-                padding: 1mm !important;
-                width: 100%;
-                max-width: 14cm;
-            }
-            
-            .print-card-title {
-                color: #000000 !important;
-                font-weight: 800 !important;
-            }
+        .print-page-group {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            width: 100%;
+            max-width: 18cm;
+            margin-left: auto;
+            margin-right: auto;
+            page-break-after: always;
+            break-after: page;
+            box-sizing: border-box;
+            padding-top: 10mm;
+            padding-bottom: 10mm;
+        }
 
-            .print-card img {
-                width: 12.5cm !important;
-                height: 6.8cm !important;
-                object-fit: cover !important;
-            }
+        .print-card {
+            page-break-inside: avoid;
+            break-inside: avoid;
+            border: 1px solid #ddd !important;
+            background: #fff !important;
+            box-shadow: none !important;
+            margin-bottom: 5mm !important;
+            padding: 3mm !important;
+            width: 100%;
+            max-width: 16cm;
+            border-radius: 6px;
+        }
+        
+        .print-card-title {
+            color: #000000 !important;
+            font-weight: 800 !important;
+        }
+
+        .print-card img {
+            width: 14cm !important;
+            height: 7.5cm !important;
+            object-fit: cover !important;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -116,8 +103,8 @@
                 <button class="btn btn-outline-light btn-sm px-2" data-bs-toggle="modal" data-bs-target="#modalMasterBengkel" title="Master Bengkel">
                     <i class="fas fa-warehouse"></i>
                 </button>
-                <button class="btn btn-outline-light btn-sm px-2" onclick="cetakLaporanBelumSelesai()" title="Cetak Laporan">
-                    <i class="fas fa-print"></i>
+                <button class="btn btn-outline-light btn-sm px-2" onclick="cetakLaporanBelumSelesai()" title="Download PDF">
+                    <i class="fas fa-file-pdf"></i>
                 </button>
                 <button class="btn btn-primary btn-sm px-2" data-bs-toggle="modal" data-bs-target="#modalTambah" title="Tambah Mobil">
                     <i class="fas fa-plus"></i>
@@ -180,8 +167,8 @@
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                 <h5 class="mb-0 fw-bold fs-6"><i class="fas fa-list me-2"></i>Daftar Kendaraan Masuk</h5>
-                <button class="btn btn-secondary btn-sm w-100 w-md-auto" onclick="cetakLaporanBelumSelesai()">
-                    <i class="fas fa-print me-1"></i> Cetak PDF Unit Belum Selesai
+                <button class="btn btn-danger btn-sm w-100 w-md-auto" onclick="cetakLaporanBelumSelesai()">
+                    <i class="fas fa-file-pdf me-1"></i> Download PDF Unit Belum Selesai
                 </button>
             </div>
             <div class="card-body p-0">
@@ -208,40 +195,44 @@
         </div>
     </div>
 
-    <!-- AREA CETAK LAPORAN -->
-    <div id="printReportArea" class="d-none">
+    <!-- AREA CETAK LAPORAN (Hidden dari tampilan utama, di-generate ke PDF) -->
+    <div id="printReportArea" style="display: none; position: absolute; left: -9999px; top: 0; width: 210mm; background: #ffffff;">
         <div id="printReportHeaderSection">
-            <div>
-                <div class="text-center border-bottom pb-2 mb-2">
-                    <h5 class="fw-bold mb-1" style="color: #000;">LAPORAN KEGIATAN KUNJUNGAN KERJA DI BENGKEL CABIN</h5>
-                    <h5 class="fw-bold mb-2" style="color: #000;">PT KURNIA TUNGGAL NUGRAHA - SELINCAH</h5>
-                    <small class="text-muted d-block mb-2">Tanggal Cetak: <span id="printDate"></span></small>
-                    
-                    <br><br><br><br>
-
-                    <div class="text-start mt-2" style="font-size: 15px; color: #000;">
-                        <div class="fw-bold">Kepada YTH.</div>
-                        <div class="ps-2">
-                            1. Bapak Hariyanto<br>
-                            2. Bapak Kurniawan<br>
-                            3. Bapak Ayong
-                        </div>
+            <div class="text-center border-bottom pb-3 mb-3">
+                <h5 class="fw-bold mb-1" style="color: #000; font-size: 16px;">LAPORAN KEGIATAN KUNJUNGAN KERJA DI BENGKEL CABIN</h5>
+                <h5 class="fw-bold mb-2" style="color: #000; font-size: 15px;">PT KURNIA TUNGGAL NUGRAHA - SELINCAH</h5>
+                <small class="text-muted d-block mb-3">Tanggal Cetak: <span id="printDate"></span></small>
+                
+                <div class="text-start mt-4" style="font-size: 14px; color: #000;">
+                    <div class="fw-bold">Kepada YTH.</div>
+                    <div class="ps-2">
+                        1. Bapak Hariyanto<br>
+                        2. Bapak Kurniawan<br>
+                        3. Bapak Ayong
                     </div>
-                </div>
-
-                <div class="fw-bold mb-2" style="font-size: 15px; color: #000;">Berikut Hasil Kunjungan:</div>
-
-                <div class="p-2 mb-3" style="font-size: 14px; background: transparent !important; border: none !important;">
-                    <div id="printSummaryBengkel"></div>
                 </div>
             </div>
 
-            <div class="mt-auto fst-italic pb-2" style="color: #000; font-size: 14px;">
-                Berikut saya lampirkan juga foto - foto kendaraanya
+            <div class="fw-bold mb-2" style="font-size: 14px; color: #000;">Berikut Hasil Kunjungan:</div>
+
+            <div class="p-2 mb-3" style="font-size: 13px;">
+                <div id="printSummaryBengkel"></div>
+            </div>
+
+            <div class="mt-4 fst-italic pb-2" style="color: #000; font-size: 13px;">
+                Berikut saya lampirkan juga foto-foto kendaraannya:
             </div>
         </div>
 
         <div id="printReportContainer"></div>
+    </div>
+
+    <!-- Loading Overlay saat Generate PDF -->
+    <div id="loadingPdf" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; color: white; font-size: 16px; font-weight: bold;">
+        <div class="bg-dark p-4 rounded shadow text-center">
+            <div class="spinner-border text-light mb-2" role="status"></div>
+            <div>Sedang Memproses & Mengunduh PDF...</div>
+        </div>
     </div>
 
     <!-- Datalist Dinamis untuk Lokasi Bengkel -->
@@ -261,9 +252,7 @@
                         <button class="btn btn-success" type="button" onclick="tambahMasterBengkel()"><i class="fas fa-plus me-1"></i> Tambah</button>
                     </div>
                     <label class="form-label small text-muted">Daftar Referensi Bengkel Saat Ini:</label>
-                    <ul class="list-group" id="listMasterBengkel" style="max-height: 250px; overflow-y: auto;">
-                        <!-- List dinamis -->
-                    </ul>
+                    <ul class="list-group" id="listMasterBengkel" style="max-height: 250px; overflow-y: auto;"></ul>
                 </div>
             </div>
         </div>
@@ -303,7 +292,6 @@
                         <textarea class="form-control" id="keteranganPerbaikan" rows="3" placeholder="Contoh: Perbaikan AC dan ganti kampas rem"></textarea>
                     </div>
                     
-                    <!-- 2 Opsi Tombol Foto Terpisah -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Foto Kendaraan / Kerusakan</label>
                         <div class="row g-2">
@@ -865,7 +853,7 @@
                 let belumDikerjakan = (dataB.total - dikerjakan);
 
                 summaryHtml += `
-                    <div class="mb-1" style="color: #000; font-size: 14px;">
+                    <div class="mb-1" style="color: #000; font-size: 13px;">
                         <div class="fw-bold" style="color: #000;">${indexRekap}. JUMLAH MOBIL DI BENGKEL ${b.toUpperCase()} ${dataB.total} UNIT</div>
                         <div class="ms-3" style="color: #000;">
                             • TOTAL UNIT YANG DIKERJAKAN : ${dikerjakan} UNIT<br>
@@ -897,40 +885,40 @@
                 
                 group.forEach((m, idxInGroup) => {
                     let globalIndex = (pageIndex * 3) + idxInGroup;
-                    let imgPrint = m.foto ? `<img src="${m.foto}" class="rounded" style="width: 12.5cm; height: 6.8cm; object-fit: cover;">` : `<div class="rounded d-flex align-items-center justify-content-center text-muted fst-italic bg-light" style="width: 12.5cm; height: 6.8cm; margin: 0 auto;">Tidak ada foto</div>`;
+                    let imgPrint = m.foto ? `<img src="${m.foto}" class="rounded" style="width: 14cm; height: 7.5cm; object-fit: cover;">` : `<div class="rounded d-flex align-items-center justify-content-center text-muted fst-italic bg-light" style="width: 14cm; height: 7.5cm; margin: 0 auto;">Tidak ada foto</div>`;
                     let tglClean = m.tanggal ? m.tanggal.toString().substring(0, 10) : '-';
                     let namaBengkelUnit = m.bengkel ? m.bengkel.toUpperCase() : 'TIDAK DIKETAHUI';
 
                     groupHtml += `
-                        <div class="print-card card p-1 mb-1">
-                            <div class="print-card-title mb-1" style="font-size: 11px; color: #000;">UNIT #${globalIndex + 1} - PLAT: ${m.plat || '-'} (${m.tipe || '-'})</div>
+                        <div class="print-card card p-2 mb-2">
+                            <div class="print-card-title mb-1" style="font-size: 12px; color: #000;">UNIT #${globalIndex + 1} - PLAT: ${m.plat || '-'} (${m.tipe || '-'})</div>
                             
-                            <div class="text-center mb-1">
+                            <div class="text-center mb-2">
                                 ${imgPrint}
                             </div>
 
-                            <div class="row border-top border-bottom py-1 mb-1 bg-light" style="font-size: 11px; color: #000;">
+                            <div class="row border-top border-bottom py-1 mb-2 bg-light" style="font-size: 11px; color: #000;">
                                 <div class="col-4 border-end">
-                                    <span class="d-block" style="font-size: 9px; color: #333;">Tanggal Masuk:</span>
+                                    <span class="d-block" style="font-size: 9px; color: #555;">Tanggal Masuk:</span>
                                     <strong style="color: #000;">${tglClean}</strong>
                                 </div>
                                 <div class="col-4 border-end">
-                                    <span class="d-block" style="font-size: 9px; color: #333;">Unit:</span>
+                                    <span class="d-block" style="font-size: 9px; color: #555;">Unit:</span>
                                     <strong style="color: #000;">${m.lokasi || '-'}</strong>
                                 </div>
                                 <div class="col-4">
-                                    <span class="d-block" style="font-size: 9px; color: #333;">Lokasi Bengkel:</span>
+                                    <span class="d-block" style="font-size: 9px; color: #555;">Lokasi Bengkel:</span>
                                     <strong style="color: #000;">${namaBengkelUnit}</strong>
                                 </div>
                             </div>
 
                             <div class="row" style="font-size: 11px; color: #000;">
                                 <div class="col-8">
-                                    <span class="d-block" style="font-size: 9px; color: #333;">Perbaikan:</span>
+                                    <span class="d-block" style="font-size: 9px; color: #555;">Perbaikan:</span>
                                     <div class="p-1 border rounded bg-white" style="min-height: 25px; font-size: 11px; color: #000;">${m.keterangan || '-'}</div>
                                 </div>
                                 <div class="col-4">
-                                    <span class="d-block" style="font-size: 9px; color: #333;">Status Pengerjaan:</span>
+                                    <span class="d-block" style="font-size: 9px; color: #555;">Status Pengerjaan:</span>
                                     <div class="p-1 border rounded bg-white text-center fw-bold d-flex align-items-center justify-content-center" style="min-height: 25px; font-size: 11px; color: #000;">
                                         ${m.status || 'Antre'}
                                     </div>
@@ -944,12 +932,32 @@
                 container.appendChild(pageDiv);
             });
 
+            // Tampilkan loading indicator
+            const loadingEl = document.getElementById('loadingPdf');
             const reportArea = document.getElementById('printReportArea');
-            reportArea.classList.remove('d-none');
             
-            window.print();
+            loadingEl.style.display = 'flex';
+            reportArea.style.display = 'block';
 
-            reportArea.classList.add('d-none');
+            // Opsi html2pdf
+            const opt = {
+                margin:       10,
+                filename:     `Laporan_Bengkel_${new Date().toISOString().split('T')[0]}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
+                jsPDF:        { unit: 'mm', format: 'legal', orientation: 'portrait' }
+            };
+
+            // Generate dan download PDF secara otomatis
+            html2pdf().from(reportArea).set(opt).save().then(() => {
+                reportArea.style.display = 'none';
+                loadingEl.style.display = 'none';
+            }).catch(err => {
+                console.error('Gagal generate PDF:', err);
+                alert('Terjadi kesalahan saat mengunduh PDF.');
+                reportArea.style.display = 'none';
+                loadingEl.style.display = 'none';
+            });
         }
 
         function hapusMobil(id) {
