@@ -198,7 +198,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Foto</th>
-                                <th>Tanggal Masuk</th>
+                                <th>Tanggal Masuk & Durasi</th>
                                 <th>No. Plat & Kendaraan</th>
                                 <th>Unit</th>
                                 <th>Lokasi Bengkel</th>
@@ -434,6 +434,23 @@
             updateFilterBengkelOptions();
             muatDataDariGoogleDrive();
         });
+
+        function hitungDurasiHari(tanggalMasuk) {
+            if (!tanggalMasuk) return '-';
+            const tglMasuk = new Date(tanggalMasuk);
+            const hariIni = new Date();
+            
+            // Reset jam agar perbandingan akurat berdasarkan hari
+            tglMasuk.setHours(0,0,0,0);
+            hariIni.setHours(0,0,0,0);
+            
+            const selisihWaktu = hariIni - tglMasuk;
+            const selisihHari = Math.round(selisihWaktu / (1000 * 60 * 60 * 24));
+            
+            if (selisihHari < 0) return 'Hari ini';
+            if (selisihHari === 0) return 'Hari ini (0 hari)';
+            return `${selisihHari} hari di bengkel`;
+        }
 
         function muatDataDariGoogleDrive() {
             document.getElementById('syncStatus').className = 'badge bg-warning text-dark me-2';
@@ -760,6 +777,8 @@
                     }
                 }
 
+                let durasiStr = hitungDurasiHari(m.tanggal);
+
                 let platVal = m.plat || '-';
                 let tipeVal = m.tipe || '-';
                 let lokasiVal = m.lokasi || '-';
@@ -769,7 +788,10 @@
                 tbody.innerHTML += `
                     <tr>
                         <td>${imgThumbnail}</td>
-                        <td>${tglVal}</td>
+                        <td>
+                            <strong>${tglVal}</strong><br>
+                            <span class="badge bg-light text-dark border" style="font-size: 10px;"><i class="fas fa-clock text-primary me-1"></i>${durasiStr}</span>
+                        </td>
                         <td><span class="fw-bold">${platVal}</span><br><small class="text-muted">${tipeVal}</small></td>
                         <td>${lokasiVal}</td>
                         <td>${bengkelVal}</td>
@@ -809,12 +831,9 @@
             document.getElementById('editTanggalMasuk').value = cleanDate;
 
             document.getElementById('editLokasiBengkel').value = m.bengkel || '';
-            
-            // Masukkan data ke input edit
             document.getElementById('editPlatNomor').value = m.plat || '';
             document.getElementById('editLokasiKerja').value = m.lokasi || '';
             document.getElementById('editTipeMobil').value = m.tipe || '';
-
             document.getElementById('editKeteranganPerbaikan').value = m.keterangan || '';
             document.getElementById('statusPengerjaan').value = m.status || 'Antre';
             document.getElementById('infoFotoEditTerpilih').innerText = '';
@@ -851,12 +870,9 @@
         function eksekusiSimpanPerubahan(m) {
             m.tanggal = document.getElementById('editTanggalMasuk').value;
             m.bengkel = document.getElementById('editLokasiBengkel').value;
-            
-            // Ambil nilai terbaru dari input edit
             m.plat = document.getElementById('editPlatNomor').value.trim().toUpperCase();
             m.lokasi = document.getElementById('editLokasiKerja').value.trim();
             m.tipe = document.getElementById('editTipeMobil').value.trim();
-
             m.keterangan = document.getElementById('editKeteranganPerbaikan').value;
             m.status = document.getElementById('statusPengerjaan').value;
             
@@ -966,6 +982,7 @@
                     let globalIndex = (pageIndex * 3) + idxInGroup;
                     let imgPrint = m.foto ? `<img src="${m.foto}" class="rounded" style="width: 12.5cm; height: 6.8cm; object-fit: cover;">` : `<div class="rounded d-flex align-items-center justify-content-center text-muted fst-italic bg-light" style="width: 12.5cm; height: 6.8cm; margin: 0 auto;">Tidak ada foto</div>`;
                     let tglClean = m.tanggal ? m.tanggal.toString().substring(0, 10) : '-';
+                    let durasiCetak = hitungDurasiHari(m.tanggal);
                     let namaBengkelUnit = m.bengkel ? m.bengkel.toUpperCase() : 'TIDAK DIKETAHUI';
 
                     groupHtml += `
@@ -978,8 +995,8 @@
 
                             <div class="row border-top border-bottom py-1 mb-1 bg-light" style="font-size: 11px; color: #000;">
                                 <div class="col-4 border-end">
-                                    <span class="d-block" style="font-size: 9px; color: #333;">Tanggal Masuk:</span>
-                                    <strong style="color: #000;">${tglClean}</strong>
+                                    <span class="d-block" style="font-size: 9px; color: #333;">Tanggal Masuk & Durasi:</span>
+                                    <strong style="color: #000;">${tglClean} (${durasiCetak})</strong>
                                 </div>
                                 <div class="col-4 border-end">
                                     <span class="d-block" style="font-size: 9px; color: #333;">Unit:</span>
