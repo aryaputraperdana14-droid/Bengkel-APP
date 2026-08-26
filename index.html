@@ -225,7 +225,7 @@
                     <h5 class="fw-bold mb-2" style="color: #000;">PT KURNIA TUNGGAL NUGRAHA - SELINCAH</h5>
                     <small class="text-muted d-block mb-2">Tanggal Cetak: <span id="printDate"></span></small>
                     
-                    <br><br><br><br>
+                    <br><br>
 
                     <div class="text-start mt-2" style="font-size: 15px; color: #000;">
                         <div class="fw-bold">Kepada YTH.</div>
@@ -239,13 +239,25 @@
 
                 <div class="fw-bold mb-2" style="font-size: 15px; color: #000;">Berikut Hasil Kunjungan:</div>
 
-                <div class="p-2 mb-3" style="font-size: 14px; background: transparent !important; border: none !important;">
+                <div class="p-2 mb-2" style="font-size: 14px; background: transparent !important; border: none !important;">
                     <div id="printSummaryBengkel"></div>
                 </div>
             </div>
 
-            <div class="mt-auto fst-italic pb-2" style="color: #000; font-size: 14px;">
-                Berikut saya lampirkan juga foto - foto kendaraanya
+            <!-- Bagian Tanda Tangan di Halaman Pertama Laporan -->
+            <div class="mt-4 pt-2" style="color: #000; font-size: 13px;">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div>Mengetahui,</div>
+                        <div style="height: 55px;"></div>
+                        <div class="fw-bold text-decoration-underline">( ........................................ )</div>
+                    </div>
+                    <div class="col-6">
+                        <div>Dilaporkan oleh,</div>
+                        <div style="height: 55px;"></div>
+                        <div class="fw-bold text-decoration-underline">( ........................................ )</div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -520,7 +532,6 @@
             if (!selectUnit) return;
             const currentValue = selectUnit.value;
             
-            // Ambil daftar unit unik dari dataMobil
             let unitUnik = [...new Set(dataMobil.map(m => m.lokasi).filter(Boolean))];
             unitUnik.sort();
 
@@ -873,6 +884,8 @@
             });
 
             let rekapBengkel = {};
+            let totalKeseluruhan = listBelumSelesai.length;
+
             listBelumSelesai.forEach(m => {
                 let bName = m.bengkel ? m.bengkel.trim() : 'Tidak Diketahui';
                 let status = m.status || 'Antre';
@@ -902,6 +915,13 @@
                 `;
                 indexRekap++;
             }
+
+            // Tambahkan Total Keseluruhan Unit
+            summaryHtml += `
+                <div class="mt-2 pt-2 border-top fw-bold" style="color: #000; font-size: 14px;">
+                    TOTAL KESELURUHAN UNIT AKTIF DI SEMUA BENGKEL: ${totalKeseluruhan} UNIT
+                </div>
+            `;
 
             document.getElementById('printSummaryBengkel').innerHTML = summaryHtml;
 
