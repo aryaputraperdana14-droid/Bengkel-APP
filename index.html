@@ -199,11 +199,11 @@
                             <tr>
                                 <th>Foto</th>
                                 <th>Tanggal Masuk</th>
-                                <th>Durasi</th>
                                 <th>No. Plat & Kendaraan</th>
                                 <th>Unit</th>
                                 <th>Lokasi Bengkel</th>
                                 <th>Progres Perbaikan</th>
+                                <th>Durasi</th>
                                 <th>Status</th>
                                 <th class="text-center">Aksi</th>
                             </tr>
@@ -450,7 +450,7 @@
             tglMasuk.setHours(0, 0, 0, 0);
             hariIni.setHours(0, 0, 0, 0);
             
-            if (hariIni < tglMasuk) return 'Hari ini (0 hari)';
+            if (hariIni < tglMasuk) return '0 hari';
 
             let years = hariIni.getFullYear() - tglMasuk.getFullYear();
             let months = hariIni.getMonth() - tglMasuk.getMonth();
@@ -472,7 +472,7 @@
             if (months > 0) hasil.push(`${months} bulan`);
             if (days > 0 || (years === 0 && months === 0)) hasil.push(`${days} hari`);
 
-            return hasil.join(' ') + ' di bengkel';
+            return hasil.join(' ');
         }
 
         function muatDataDariGoogleDrive() {
@@ -831,11 +831,11 @@
                     <tr>
                         <td>${imgThumbnail}</td>
                         <td><strong>${tglVal}</strong></td>
-                        <td><span class="badge bg-light text-dark border" style="font-size: 11px;"><i class="fas fa-clock text-primary me-1"></i>${durasiStr}</span></td>
                         <td><span class="fw-bold">${platVal}</span><br><small class="text-muted">${tipeVal}</small></td>
                         <td>${lokasiVal}</td>
                         <td>${bengkelVal}</td>
                         <td>${ketVal}</td>
+                        <td><span class="badge bg-light text-dark border" style="font-size: 11px;"><i class="fas fa-clock text-primary me-1"></i>${durasiStr}</span></td>
                         <td><span class="badge ${badgeColor}">${statusVal}</span></td>
                         <td class="text-center">
                             <button class="btn btn-sm btn-outline-primary me-1 px-2 py-1" onclick="bukaDetail('${m.id}')"><i class="fas fa-edit"></i></button>
@@ -1052,6 +1052,7 @@
                                 ${imgPrint}
                             </div>
 
+                            <!-- URUTAN CETAK: Tanggal Masuk, Unit, Lokasi Bengkel -->
                             <div class="row border-top border-bottom py-1 mb-1 bg-light" style="font-size: 11px; color: #000;">
                                 <div class="col-4 border-end">
                                     <span class="d-block" style="font-size: 9px; color: #333;">Tanggal Masuk:</span>
@@ -1062,15 +1063,22 @@
                                     <strong style="color: #000;">${m.lokasi || '-'}</strong>
                                 </div>
                                 <div class="col-4">
-                                    <span class="d-block" style="font-size: 9px; color: #333;">Durasi di Bengkel:</span>
-                                    <strong style="color: #000;">${durasiCetak}</strong>
+                                    <span class="d-block" style="font-size: 9px; color: #333;">Lokasi Bengkel:</span>
+                                    <strong style="color: #000;">${namaBengkelUnit}</strong>
                                 </div>
                             </div>
 
+                            <!-- URUTAN CETAK: Progres Perbaikan, Durasi di Bengkel (tanpa teks 'di bengkel'), Status Pengerjaan -->
                             <div class="row" style="font-size: 11px; color: #000;">
-                                <div class="col-8">
-                                    <span class="d-block" style="font-size: 9px; color: #333;">Progres Perbaikan & Lokasi Bengkel (${namaBengkelUnit}):</span>
+                                <div class="col-5 border-end">
+                                    <span class="d-block" style="font-size: 9px; color: #333;">Progres Perbaikan:</span>
                                     <div class="p-1 border rounded bg-white" style="min-height: 25px; font-size: 11px; color: #000;">${m.keterangan || '-'}</div>
+                                </div>
+                                <div class="col-3 border-end">
+                                    <span class="d-block" style="font-size: 9px; color: #333;">Durasi di Bengkel:</span>
+                                    <div class="p-1 border rounded bg-white text-center d-flex align-items-center justify-content-center" style="min-height: 25px; font-size: 10px; color: #000;">
+                                        <strong>${durasiCetak}</strong>
+                                    </div>
                                 </div>
                                 <div class="col-4">
                                     <span class="d-block" style="font-size: 9px; color: #333;">Status Pengerjaan:</span>
