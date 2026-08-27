@@ -30,7 +30,7 @@
             vertical-align: middle !important;
         }
 
-        /* Styling Khusus untuk Mode Cetak / PDF (Header Fleksibel) */
+        /* Styling Khusus untuk Mode Cetak / PDF */
         @media print {
             @page {
                 size: legal;
@@ -54,7 +54,6 @@
                 display: none !important;
             }
             
-            /* Diubah menjadi fleksibel, tidak dikunci di bawah */
             #printReportHeaderSection {
                 page-break-after: always;
                 break-after: page;
@@ -243,7 +242,7 @@
                 </div>
             </div>
 
-            <!-- Posisi sekarang fleksibel mengikuti konten rekap di atasnya -->
+            <!-- Posisi fleksibel mengikuti konten rekap di atasnya -->
             <div class="mt-4 fst-italic pb-2" style="color: #000; font-size: 14px;">
                 Berikut saya lampirkan juga foto - foto kendaraanya
             </div>
@@ -678,7 +677,7 @@
 
         function simpanDataBaru() {
             const tanggal = document.getElementById('tanggalMasuk').value;
-            const plat = document.getElementById('platNomor').value.trim();
+            const plat = document.getElementById('platNomor').value.trim().toUpperCase();
             const tipe = document.getElementById('tipeMobil').value.trim();
             const lokasi = document.getElementById('lokasiKerja').value.trim();
             const bengkel = document.getElementById('lokasiBengkel').value.trim();
@@ -686,6 +685,13 @@
 
             if (!plat || !tipe || !lokasi || !bengkel) {
                 alert('Mohon lengkapi data Plat, Tipe, Unit, dan Lokasi Bengkel terlebih dahulu!');
+                return;
+            }
+
+            // Validasi Mencegah Data Dobel untuk Plat Nomor yang Aktif (Belum Selesai)
+            const cekDuplikat = dataMobil.find(m => m.plat === plat && (m.status || 'Antre') !== 'Selesai');
+            if (cekDuplikat) {
+                alert(`Peringatan: Kendaraan dengan Nomor Plat "${plat}" sudah terdaftar di bengkel (${cekDuplikat.bengkel}) dan statusnya belum selesai!`);
                 return;
             }
 
