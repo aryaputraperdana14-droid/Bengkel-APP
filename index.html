@@ -311,18 +311,18 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Foto Kendaraan / Kerusakan</label>
+                        <label class="form-label fw-bold">Foto Kendaraan / Kerusakan (GPS Watermark)</label>
                         <div class="row g-2">
                             <div class="col-6">
                                 <label class="btn btn-outline-primary btn-sm w-100 py-2">
-                                    <i class="fas fa-camera me-1"></i> Buka Kamera
-                                    <input type="file" accept="image/*" capture="environment" class="d-none" onchange="prosesFotoPilihan(this)">
+                                    <i class="fas fa-camera me-1"></i> Kamera GPS
+                                    <input type="file" accept="image/*" capture="environment" class="d-none" onchange="prosesFotoDenganGPS(this, 'infoFotoTerpilih')">
                                 </label>
                             </div>
                             <div class="col-6">
                                 <label class="btn btn-outline-secondary btn-sm w-100 py-2">
                                     <i class="fas fa-image me-1"></i> Pilih Galeri
-                                    <input type="file" accept="image/*" class="d-none" onchange="prosesFotoPilihan(this)">
+                                    <input type="file" accept="image/*" class="d-none" onchange="prosesFotoTanpaGPS(this, 'infoFotoTerpilih')">
                                 </label>
                             </div>
                         </div>
@@ -349,18 +349,18 @@
                     <div class="text-center mb-3">
                         <img id="lblFoto" src="" alt="Foto Kendaraan" class="img-fluid rounded border mb-2" style="max-height: 200px; display: none;">
                         <div class="mt-2">
-                            <label class="form-label small text-muted">Ganti / Perbarui Foto:</label>
+                            <label class="form-label small text-muted">Ganti / Perbarui Foto (GPS Watermark):</label>
                             <div class="row g-2">
                                 <div class="col-6">
                                     <label class="btn btn-outline-primary btn-sm w-100 py-1">
-                                        <i class="fas fa-camera me-1"></i> Kamera
-                                        <input type="file" accept="image/*" capture="environment" class="d-none" onchange="prosesFotoEditPilihan(this)">
+                                        <i class="fas fa-camera me-1"></i> Kamera GPS
+                                        <input type="file" accept="image/*" capture="environment" class="d-none" onchange="prosesFotoDenganGPS(this, 'infoFotoEditTerpilih')">
                                     </label>
                                 </div>
                                 <div class="col-6">
                                     <label class="btn btn-outline-secondary btn-sm w-100 py-1">
                                         <i class="fas fa-image me-1"></i> Galeri
-                                        <input type="file" accept="image/*" class="d-none" onchange="prosesFotoEditPilihan(this)">
+                                        <input type="file" accept="image/*" class="d-none" onchange="prosesFotoTanpaGPS(this, 'infoFotoEditTerpilih')">
                                     </label>
                                 </div>
                             </div>
@@ -436,7 +436,6 @@
             muatDataDariGoogleDrive();
         });
 
-        // Fungsi bantu untuk memformat tanggal ke DD-MM-YYYY untuk tampilan
         function formatTanggalID(tanggalStr) {
             if (!tanggalStr) return '-';
             let str = tanggalStr.toString().substring(0, 10);
@@ -485,6 +484,85 @@
 
             return hasil.join(' ');
         }
+
+        // --- FITUR KOMPRESI FOTO & WATERMARK GPS ---
+        function kompresDanBeriWatermark(file, infoElementId, pakaiGPS) {
+            const infoEl = document.getElementById(infoElementId);
+            infoEl.innerText = "Mengambil koordinat GPS & memproses foto...";
+
+            const prosesLanjut = (lat, lon) => {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        const MAX_WIDTH = 800;
+                        if (width > MAX_WIDTH) {
+                            height = Math.round((height * MAX_WIDTH) / width);
+                            width = MAX_WIDTH;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Jika opsi GPS aktif dan koordinat tersedia, tambahkan watermark
+                        if (pakaiGPS && lat !== null && lon !== null) {
+                            const now = new Date();
+                            const tglStr = `${String(now.getDate()).padStart(2,'0')}-${String(now.getMonth()+1).padStart(2,'0')}-${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+                            const gpsText1 = `Waktu: ${tglStr}`;
+                            const gpsText2 = `GPS: ${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+
+                            ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+                            ctx.fillRect(0, height - 55, width, 55);
+
+                            ctx.fillStyle = "#ffffff";
+                            ctx.font = `${Math.max(12, Math.round(width * 0.03))`px sans-serif`;
+                            ctx.fillText(gpsText1, 15, height - 32);
+                            ctx.fillText(gpsText2, 15, height - 12);
+                        }
+
+                        fotoBase64Temp = canvas.toDataURL('image/jpeg', 0.5);
+                        infoEl.innerText = `✔ Foto berhasil dimuat ${pakaiGPS && lat !== null ? '(dengan GPS Watermark)' : ''}`;
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            };
+
+            if (pakaiGPS && navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        prosesLanjut(position.coords.latitude, position.coords.longitude);
+                    },
+                    (error) => {
+                        console.warn("Gagal mendeteksi GPS:", error.message);
+                        alert("Gagal mendeteksi lokasi GPS. Foto akan disimpan tanpa watermark GPS.");
+                        prosesLanjut(null, null);
+                    },
+                    { timeout: 10000, enableHighAccuracy: true }
+                );
+            } else {
+                prosesLanjut(null, null);
+            }
+        }
+
+        function prosesFotoDenganGPS(input, infoElementId) {
+            if (input.files && input.files[0]) {
+                kompresDanBeriWatermark(input.files[0], infoElementId, true);
+            }
+        }
+
+        function prosesFotoTanpaGPS(input, infoElementId) {
+            if (input.files && input.files[0]) {
+                kompresDanBeriWatermark(input.files[0], infoElementId, false);
+            }
+        }
+        // ---------------------------------------------
 
         function muatDataDariGoogleDrive() {
             document.getElementById('syncStatus').className = 'badge bg-warning text-dark me-2';
@@ -634,52 +712,6 @@
             if (confirm(`Yakin ingin menghapus "${masterBengkel[index]}" dari daftar referensi?`)) {
                 masterBengkel.splice(index, 1);
                 simpanMasterKeStorage();
-            }
-        }
-
-        function kompresDanSimpan(file, callback) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-
-                    const MAX_WIDTH = 500;
-                    if (width > MAX_WIDTH) {
-                        height = Math.round((height * MAX_WIDTH) / width);
-                        width = MAX_WIDTH;
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.4);
-                    callback(compressedDataUrl);
-                };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function prosesFotoPilihan(input) {
-            if (input.files && input.files[0]) {
-                kompresDanSimpan(input.files[0], function(compressedResult) {
-                    fotoBase64Temp = compressedResult;
-                    document.getElementById('infoFotoTerpilih').innerText = `✔ Foto berhasil dimuat dan siap disimpan`;
-                });
-            }
-        }
-
-        function prosesFotoEditPilihan(input) {
-            if (input.files && input.files[0]) {
-                kompresDanSimpan(input.files[0], function(compressedResult) {
-                    fotoBase64Temp = compressedResult;
-                    document.getElementById('infoFotoEditTerpilih').innerText = `✔ Foto baru siap diperbarui`;
-                });
             }
         }
 
