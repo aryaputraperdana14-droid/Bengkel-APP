@@ -30,12 +30,23 @@
             vertical-align: middle !important;
         }
 
-        /* Styling Khusus untuk Mode Cetak / PDF Versi Lama (Stabil di Komputer) */
+        /* Styling Khusus untuk Mode Cetak / PDF (Kompatibel Komputer & Semua HP) */
         @media print {
             @page {
                 size: legal;
-                margin: 10mm;
+                margin: 8mm;
             }
+            
+            /* Paksa hilangkan elemen header/footer otomatis dari browser HP */
+            @page :left {
+                margin-top: 0;
+                margin-bottom: 0;
+            }
+            @page :right {
+                margin-top: 0;
+                margin-bottom: 0;
+            }
+
             body * {
                 visibility: hidden;
             }
@@ -100,9 +111,13 @@
             }
 
             .print-card img {
-                width: 12.5cm !important;
-                height: 6.8cm !important;
+                width: 100% !important;
+                max-width: 12.5cm !important;
+                height: auto !important;
+                max-height: 6.8cm !important;
                 object-fit: cover !important;
+                margin: 0 auto;
+                display: block;
             }
         }
     </style>
