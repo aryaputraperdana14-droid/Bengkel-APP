@@ -436,6 +436,17 @@
             muatDataDariGoogleDrive();
         });
 
+        // Fungsi bantu untuk memformat tanggal ke DD-MM-YYYY untuk tampilan
+        function formatTanggalID(tanggalStr) {
+            if (!tanggalStr) return '-';
+            let str = tanggalStr.toString().substring(0, 10);
+            let parts = str.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}-${parts[1]}-${parts[0]}`;
+            }
+            return str;
+        }
+
         function hitungDurasiHari(tanggalMasuk) {
             if (!tanggalMasuk) return '-';
             
@@ -803,22 +814,7 @@
 
                 let imgThumbnail = m.foto ? `<img src="${m.foto}" class="rounded" style="width: 40px; height: 40px; object-fit: cover;">` : `<span class="text-muted small">No Foto</span>`;
 
-                let tglVal = '-';
-                if (m.tanggal) {
-                    let d = new Date(m.tanggal);
-                    if (isNaN(d.getTime())) {
-                        d = new Date(Date.parse(m.tanggal));
-                    }
-                    if (!isNaN(d.getTime())) {
-                        let year = d.getFullYear();
-                        let month = String(d.getMonth() + 1).padStart(2, '0');
-                        let day = String(d.getDate()).padStart(2, '0');
-                        tglVal = `${year}-${month}-${day}`;
-                    } else {
-                        tglVal = m.tanggal.toString().substring(0, 10);
-                    }
-                }
-
+                let tglVal = formatTanggalID(m.tanggal);
                 let durasiStr = hitungDurasiHari(m.tanggal);
 
                 let platVal = m.plat || '-';
@@ -1025,22 +1021,7 @@
                     let globalIndex = (pageIndex * 3) + idxInGroup;
                     let imgPrint = m.foto ? `<img src="${m.foto}" class="rounded" style="width: 12.5cm; height: 6.8cm; object-fit: cover;">` : `<div class="rounded d-flex align-items-center justify-content-center text-muted fst-italic bg-light" style="width: 12.5cm; height: 6.8cm; margin: 0 auto;">Tidak ada foto</div>`;
                     
-                    let tglClean = '-';
-                    if (m.tanggal) {
-                        let d = new Date(m.tanggal);
-                        if (isNaN(d.getTime())) {
-                            d = new Date(Date.parse(m.tanggal));
-                        }
-                        if (!isNaN(d.getTime())) {
-                            let year = d.getFullYear();
-                            let month = String(d.getMonth() + 1).padStart(2, '0');
-                            let day = String(d.getDate()).padStart(2, '0');
-                            tglClean = `${year}-${month}-${day}`;
-                        } else {
-                            tglClean = m.tanggal.toString().substring(0, 10);
-                        }
-                    }
-
+                    let tglClean = formatTanggalID(m.tanggal);
                     let durasiCetak = hitungDurasiHari(m.tanggal);
                     let namaBengkelUnit = m.bengkel ? m.bengkel.toUpperCase() : 'TIDAK DIKETAHUI';
 
@@ -1068,7 +1049,7 @@
                                 </div>
                             </div>
 
-                            <!-- URUTAN CETAK: Progres Perbaikan, Durasi di Bengkel (tanpa teks 'di bengkel'), Status Pengerjaan -->
+                            <!-- URUTAN CETAK: Progres Perbaikan, Durasi di Bengkel, Status Pengerjaan -->
                             <div class="row" style="font-size: 11px; color: #000;">
                                 <div class="col-5 border-end">
                                     <span class="d-block" style="font-size: 9px; color: #333;">Progres Perbaikan:</span>
