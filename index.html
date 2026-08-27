@@ -316,13 +316,13 @@
                             <div class="col-6">
                                 <label class="btn btn-outline-primary btn-sm w-100 py-2">
                                     <i class="fas fa-camera me-1"></i> Buka Kamera
-                                    <input type="file" accept="image/*" capture="environment" class="d-none" onchange="prosesFotoPilihan(this)">
+                                    <input type="file" accept="image/*" capture="environment" class="d-none" onchange="prosesFotoPilihan(this, 'infoFotoTerpilih')">
                                 </label>
                             </div>
                             <div class="col-6">
                                 <label class="btn btn-outline-secondary btn-sm w-100 py-2">
                                     <i class="fas fa-image me-1"></i> Pilih Galeri
-                                    <input type="file" accept="image/*" class="d-none" onchange="prosesFotoPilihan(this)">
+                                    <input type="file" accept="image/*" class="d-none" onchange="prosesFotoPilihan(this, 'infoFotoTerpilih')">
                                 </label>
                             </div>
                         </div>
@@ -354,13 +354,13 @@
                                 <div class="col-6">
                                     <label class="btn btn-outline-primary btn-sm w-100 py-1">
                                         <i class="fas fa-camera me-1"></i> Kamera
-                                        <input type="file" accept="image/*" capture="environment" class="d-none" onchange="prosesFotoEditPilihan(this)">
+                                        <input type="file" accept="image/*" capture="environment" class="d-none" onchange="prosesFotoPilihan(this, 'infoFotoEditTerpilih')">
                                     </label>
                                 </div>
                                 <div class="col-6">
                                     <label class="btn btn-outline-secondary btn-sm w-100 py-1">
                                         <i class="fas fa-image me-1"></i> Galeri
-                                        <input type="file" accept="image/*" class="d-none" onchange="prosesFotoEditPilihan(this)">
+                                        <input type="file" accept="image/*" class="d-none" onchange="prosesFotoPilihan(this, 'infoFotoEditTerpilih')">
                                     </label>
                                 </div>
                             </div>
@@ -424,19 +424,15 @@
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwoCm3Tax3nGVzbIvGVLlKYLQWlesOq9J7t6n6t-uqwopEIvLHpBbjTOqi58ad3y8uZ/exec";
 
         let dataMobil = [];
-        let masterBengkel = JSON.parse(localStorage.getItem('bengkel_master_lokasi')) || ['Cabin', 'Central', 'Workshop Utama', 'Cabang Selincah'];
+        let masterBengkel = ['Cabin', 'Central', 'Workshop Utama', 'Cabang Selincah'];
         let fotoBase64Temp = "";
 
         document.addEventListener("DOMContentLoaded", function() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('tanggalMasuk').value = today;
-            renderMasterBengkel();
-            renderDatalistBengkel();
-            updateFilterBengkelOptions();
             muatDataDariGoogleDrive();
         });
 
-        // Fungsi bantu untuk memformat tanggal ke DD-MM-YYYY untuk tampilan
         function formatTanggalID(tanggalStr) {
             if (!tanggalStr) return '-';
             let str = tanggalStr.toString().substring(0, 10);
@@ -486,14 +482,54 @@
             return hasil.join(' ');
         }
 
+        function kompresDanSimpan(file, callback) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    const MAX_WIDTH = 500;
+                    if (width > MAX_WIDTH) {
+                        height = Math.round((height * MAX_WIDTH) / width);
+                        width = MAX_WIDTH;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.4);
+                    callback(compressedDataUrl);
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function prosesFotoPilihan(input, infoElementId) {
+            if (input.files && input.files[0]) {
+                kompresDanSimpan(input.files[0], function(compressedResult) {
+                    fotoBase64Temp = compressedResult;
+                    document.getElementById(infoElementId).innerText = `✔ Foto berhasil dimuat dan siap disimpan`;
+                });
+            }
+        }
+
         function muatDataDariGoogleDrive() {
             document.getElementById('syncStatus').className = 'badge bg-warning text-dark me-2';
             document.getElementById('syncStatus').innerText = 'Menyinkronkan...';
 
             fetch(WEB_APP_URL)
                 .then(response => response.json())
-                .then(data => {
-                    dataMobil = Array.isArray(data) ? data : [];
+                .then(res => {
+                    dataMobil = Array.isArray(res.dataMobil) ? res.dataMobil : [];
+                    if (Array.isArray(res.masterBengkel) && res.masterBengkel.length > 0) {
+                        masterBengkel = res.masterBengkel;
+                    }
                     
                     dataMobil.forEach(m => {
                         if (m.tanggal) {
@@ -510,8 +546,12 @@
                         }
                     });
 
+                    renderMasterBengkel();
+                    renderDatalistBengkel();
+                    updateFilterBengkelOptions();
                     updateFilterUnitOptions();
                     renderTabelDisesuaikan();
+
                     document.getElementById('syncStatus').className = 'badge bg-success me-2';
                     document.getElementById('syncStatus').innerText = 'Online';
                 })
@@ -546,11 +586,11 @@
             });
         }
 
-        function simpanMasterKeStorage() {
-            localStorage.setItem('bengkel_master_lokasi', JSON.stringify(masterBengkel));
+        function simpanMasterKeDriveOnline() {
             renderMasterBengkel();
             renderDatalistBengkel();
             updateFilterBengkelOptions();
+            kirimAksiKeDriveBackground('saveMaster', { list: masterBengkel });
         }
 
         function renderMasterBengkel() {
@@ -626,60 +666,14 @@
                 return;
             }
             masterBengkel.push(inputVal);
-            simpanMasterKeStorage();
+            simpanMasterKeDriveOnline();
             document.getElementById('inputNamaBengkelBaru').value = '';
         }
 
         function hapusMasterBengkel(index) {
             if (confirm(`Yakin ingin menghapus "${masterBengkel[index]}" dari daftar referensi?`)) {
                 masterBengkel.splice(index, 1);
-                simpanMasterKeStorage();
-            }
-        }
-
-        function kompresDanSimpan(file, callback) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-
-                    const MAX_WIDTH = 500;
-                    if (width > MAX_WIDTH) {
-                        height = Math.round((height * MAX_WIDTH) / width);
-                        width = MAX_WIDTH;
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.4);
-                    callback(compressedDataUrl);
-                };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function prosesFotoPilihan(input) {
-            if (input.files && input.files[0]) {
-                kompresDanSimpan(input.files[0], function(compressedResult) {
-                    fotoBase64Temp = compressedResult;
-                    document.getElementById('infoFotoTerpilih').innerText = `✔ Foto berhasil dimuat dan siap disimpan`;
-                });
-            }
-        }
-
-        function prosesFotoEditPilihan(input) {
-            if (input.files && input.files[0]) {
-                kompresDanSimpan(input.files[0], function(compressedResult) {
-                    fotoBase64Temp = compressedResult;
-                    document.getElementById('infoFotoEditTerpilih').innerText = `✔ Foto baru siap diperbarui`;
-                });
+                simpanMasterKeDriveOnline();
             }
         }
 
@@ -698,7 +692,7 @@
 
             if (!masterBengkel.map(b => b.toLowerCase()).includes(bengkel.toLowerCase())) {
                 masterBengkel.push(bengkel);
-                simpanMasterKeStorage();
+                simpanMasterKeDriveOnline();
             }
 
             eksekusiSimpan(fotoBase64Temp, tanggal, plat, tipe, lokasi, bengkel, keterangan);
@@ -896,7 +890,7 @@
             const bengkelBaru = document.getElementById('editLokasiBengkel').value.trim();
             if (bengkelBaru && !masterBengkel.map(b => b.toLowerCase()).includes(bengkelBaru.toLowerCase())) {
                 masterBengkel.push(bengkelBaru);
-                simpanMasterKeStorage();
+                simpanMasterKeDriveOnline();
             }
 
             if (fotoBase64Temp) {
