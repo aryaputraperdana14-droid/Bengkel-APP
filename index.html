@@ -30,11 +30,11 @@
             vertical-align: middle !important;
         }
 
-        /* Styling Khusus untuk Mode Cetak / PDF (Tetap Portrait, Aman dari Terpotong di Semua HP) */
+        /* Styling Khusus untuk Mode Cetak / PDF (Header Fleksibel) */
         @media print {
             @page {
-                size: legal portrait;
-                margin: 4mm;
+                size: legal;
+                margin: 10mm;
             }
             body * {
                 visibility: hidden;
@@ -54,6 +54,7 @@
                 display: none !important;
             }
             
+            /* Diubah menjadi fleksibel, tidak dikunci di bawah */
             #printReportHeaderSection {
                 page-break-after: always;
                 break-after: page;
@@ -61,10 +62,7 @@
                 max-width: 16cm;
                 margin-left: auto;
                 margin-right: auto;
-                min-height: 94vh;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
+                display: block;
                 box-sizing: border-box;
                 padding-bottom: 5mm;
             }
@@ -78,8 +76,8 @@
                 page-break-after: always;
                 break-after: page;
                 box-sizing: border-box;
-                padding-top: 2mm;
-                padding-bottom: 2mm;
+                padding-top: 5mm;
+                padding-bottom: 5mm;
             }
 
             .print-card {
@@ -88,10 +86,10 @@
                 border: none !important;
                 background: transparent !important;
                 box-shadow: none !important;
-                margin-bottom: 3mm !important;
+                margin-bottom: 4mm !important;
                 padding: 1mm !important;
                 width: 100%;
-                max-width: 13.5cm;
+                max-width: 14cm;
             }
             
             .print-card-title {
@@ -100,13 +98,9 @@
             }
 
             .print-card img {
-                width: 100% !important;
-                max-width: 12cm !important;
-                height: auto !important;
-                max-height: 6.2cm !important;
+                width: 12.5cm !important;
+                height: 6.8cm !important;
                 object-fit: cover !important;
-                margin: 0 auto;
-                display: block;
             }
         }
     </style>
@@ -249,7 +243,8 @@
                 </div>
             </div>
 
-            <div class="mt-auto fst-italic pb-2" style="color: #000; font-size: 14px;">
+            <!-- Posisi sekarang fleksibel mengikuti konten rekap di atasnya -->
+            <div class="mt-4 fst-italic pb-2" style="color: #000; font-size: 14px;">
                 Berikut saya lampirkan juga foto - foto kendaraanya
             </div>
         </div>
@@ -1017,7 +1012,7 @@
                 
                 group.forEach((m, idxInGroup) => {
                     let globalIndex = (pageIndex * 3) + idxInGroup;
-                    let imgPrint = m.foto ? `<img src="${m.foto}" class="rounded" style="width: 12cm; height: 6.2cm; object-fit: cover;">` : `<div class="rounded d-flex align-items-center justify-content-center text-muted fst-italic bg-light" style="width: 12cm; height: 6.2cm; margin: 0 auto;">Tidak ada foto</div>`;
+                    let imgPrint = m.foto ? `<img src="${m.foto}" class="rounded" style="width: 12.5cm; height: 6.8cm; object-fit: cover;">` : `<div class="rounded d-flex align-items-center justify-content-center text-muted fst-italic bg-light" style="width: 12.5cm; height: 6.8cm; margin: 0 auto;">Tidak ada foto</div>`;
                     
                     let tglClean = formatTanggalID(m.tanggal);
                     let durasiCetak = hitungDurasiHari(m.tanggal);
