@@ -30,11 +30,11 @@
             vertical-align: middle !important;
         }
 
-        /* Styling Khusus untuk Mode Cetak / PDF (Responsif di Komputer & Semua HP) */
+        /* Styling Khusus untuk Mode Cetak / PDF (Tetap Portrait, Aman dari Terpotong di Semua HP) */
         @media print {
             @page {
-                size: legal;
-                margin: 10mm;
+                size: legal portrait;
+                margin: 4mm;
             }
             body * {
                 visibility: hidden;
@@ -78,8 +78,8 @@
                 page-break-after: always;
                 break-after: page;
                 box-sizing: border-box;
-                padding-top: 5mm;
-                padding-bottom: 5mm;
+                padding-top: 2mm;
+                padding-bottom: 2mm;
             }
 
             .print-card {
@@ -88,10 +88,10 @@
                 border: none !important;
                 background: transparent !important;
                 box-shadow: none !important;
-                margin-bottom: 4mm !important;
+                margin-bottom: 3mm !important;
                 padding: 1mm !important;
                 width: 100%;
-                max-width: 14cm;
+                max-width: 13.5cm;
             }
             
             .print-card-title {
@@ -99,12 +99,11 @@
                 font-weight: 800 !important;
             }
 
-            /* Menggunakan Persentase & Auto agar Fleksibel di Semua Jenis HP, tapi Tetap Proporsional */
             .print-card img {
                 width: 100% !important;
-                max-width: 12.5cm !important;
+                max-width: 12cm !important;
                 height: auto !important;
-                max-height: 6.8cm !important;
+                max-height: 6.2cm !important;
                 object-fit: cover !important;
                 margin: 0 auto;
                 display: block;
@@ -1018,7 +1017,7 @@
                 
                 group.forEach((m, idxInGroup) => {
                     let globalIndex = (pageIndex * 3) + idxInGroup;
-                    let imgPrint = m.foto ? `<img src="${m.foto}" class="rounded" style="width: 100% !important; max-width: 12.5cm !important; height: auto !important; max-height: 6.8cm !important; object-fit: cover !important;">` : `<div class="rounded d-flex align-items-center justify-content-center text-muted fst-italic bg-light" style="width: 100%; max-width: 12.5cm; height: 6.8cm; margin: 0 auto;">Tidak ada foto</div>`;
+                    let imgPrint = m.foto ? `<img src="${m.foto}" class="rounded" style="width: 12cm; height: 6.2cm; object-fit: cover;">` : `<div class="rounded d-flex align-items-center justify-content-center text-muted fst-italic bg-light" style="width: 12cm; height: 6.2cm; margin: 0 auto;">Tidak ada foto</div>`;
                     
                     let tglClean = formatTanggalID(m.tanggal);
                     let durasiCetak = hitungDurasiHari(m.tanggal);
