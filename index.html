@@ -3,24 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Aplikasi Bengkel Mandiri (Mobile Friendly)</title>
+    <title>Aplikasi Bengkel Mandiri (Modern UI)</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome untuk Icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter untuk Tampilan Modern -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         body {
+            font-family: 'Inter', sans-serif;
             font-size: 14px;
-            background-color: #f8f9fa;
+            background-color: #f4f7f6;
+            color: #334155;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        /* Navbar Modern */
+        .navbar {
+            background: linear-gradient(135deg, #1e293b, #0f172a) !important;
+            padding: 0.8rem 1rem;
         }
         .navbar-brand {
-            font-size: 1rem !important;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
+
+        /* Card & UI Komponen Modern */
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: transform 0.2s ease;
+        }
+        
+        .stat-icon-box {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+        }
+
+        /* Tabel Modern & Scroll Tersendiri */
+        .table-scroll-container {
+            max-height: 450px;
+            overflow-y: auto;
+            position: relative;
+        }
+        .table-scroll-container thead th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #f8fafc !important;
+        }
+
+        .table thead th {
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #e2e8f0;
+            padding: 12px 16px;
+        }
+        .table tbody td {
+            padding: 12px 16px;
+            color: #1e293b;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        /* Badge Modern Pill */
+        .badge {
+            font-weight: 500;
+            padding: 0.4em 0.8em;
+            border-radius: 50rem;
+        }
+
         .btn-sm {
-            padding: 0.35rem 0.6rem;
+            padding: 0.4rem 0.8rem;
             font-size: 0.85rem;
+            border-radius: 8px;
         }
+
+        .form-control, .form-select {
+            border-radius: 8px;
+            border-color: #cbd5e1;
+            padding: 0.55rem 0.75rem;
+        }
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+            border-color: #3b82f6;
+        }
+
         .table-responsive {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
@@ -28,6 +109,16 @@
         table th, table td {
             white-space: nowrap;
             vertical-align: middle !important;
+        }
+
+        /* Footer Modern */
+        footer {
+            background-color: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            color: #64748b;
+            margin-top: auto;
+            padding: 1.25rem 0;
+            font-size: 13px;
         }
 
         /* Styling Khusus untuk Mode Cetak / PDF */
@@ -104,47 +195,57 @@
         }
     </style>
 </head>
-<body class="bg-light">
+<body>
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-dark bg-dark shadow-sm">
-        <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1"><i class="fas fa-car-wrench me-2"></i>Bengkel App</span>
-            <div class="d-flex gap-1 align-items-center">
-                <span id="syncStatus" class="badge bg-secondary me-1" style="font-size: 10px;">Menghubungkan...</span>
-                <button class="btn btn-outline-light btn-sm px-2" data-bs-toggle="modal" data-bs-target="#modalMasterBengkel" title="Master Bengkel">
-                    <i class="fas fa-warehouse"></i>
+    <!-- Navbar Modern -->
+    <nav class="navbar navbar-dark shadow-sm">
+        <div class="container-fluid px-3">
+            <span class="navbar-brand mb-0 h1 d-flex align-items-center">
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                    <i class="fas fa-wrench fa-xs"></i>
+                </div>
+                Bengkel App
+            </span>
+            <div class="d-flex gap-2 align-items-center">
+                <span id="syncStatus" class="badge bg-secondary px-2 py-1" style="font-size: 11px;">Menghubungkan...</span>
+                <button class="btn btn-outline-light btn-sm px-3" data-bs-toggle="modal" data-bs-target="#modalMasterBengkel" title="Master Bengkel">
+                    <i class="fas fa-warehouse me-1"></i> <span class="d-none d-md-inline">Master</span>
                 </button>
-                <button class="btn btn-outline-light btn-sm px-2" onclick="cetakLaporanBelumSelesai()" title="Cetak Laporan">
-                    <i class="fas fa-print"></i>
+                <button class="btn btn-outline-light btn-sm px-3" onclick="cetakLaporanBelumSelesai()" title="Cetak Laporan">
+                    <i class="fas fa-print me-1"></i> <span class="d-none d-md-inline">Cetak</span>
                 </button>
-                <button class="btn btn-primary btn-sm px-2" data-bs-toggle="modal" data-bs-target="#modalTambah" title="Tambah Mobil">
-                    <i class="fas fa-plus"></i>
+                <button class="btn btn-primary btn-sm px-3 fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalTambah" title="Tambah Mobil">
+                    <i class="fas fa-plus me-1"></i> Tambah Unit
                 </button>
             </div>
         </div>
     </nav>
 
     <!-- Konten Utama -->
-    <div class="container my-3 px-2">
+    <div class="container my-4 px-3">
         
         <!-- Statistik Ringkas & Total Berdasarkan Lokasi Bengkel dan Rincian Status -->
-        <div class="row g-2 mb-3">
+        <div class="row g-3 mb-4">
             <div class="col-12 col-md-4">
-                <div class="card bg-white border-0 shadow-sm p-3 h-100">
+                <div class="card bg-white p-3 h-100 border-start border-primary border-4">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-1 small">Total di Bengkel</h6>
-                            <h3 id="statTotal" class="fw-bold mb-0">0</h3>
-                            <small class="text-muted" id="statProsesSub">Aktif: 0</small>
+                            <span class="text-uppercase text-muted fw-semibold" style="font-size: 11px; letter-spacing: 0.5px;">Total di Bengkel</span>
+                            <h2 id="statTotal" class="fw-bold mb-0 text-dark mt-1">0</h2>
+                            <span class="badge bg-light text-primary border mt-2" id="statProsesSub">Aktif: 0</span>
                         </div>
-                        <div class="bg-primary text-white p-3 rounded-3"><i class="fas fa-car fa-2x"></i></div>
+                        <div class="stat-icon-box bg-primary bg-opacity-10 text-primary">
+                            <i class="fas fa-car fa-lg"></i>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-12 col-md-8">
-                <div class="card bg-white border-0 shadow-sm p-3 h-100">
-                    <h6 class="text-muted mb-2 small"><i class="fas fa-map-marker-alt me-1"></i> Total & Rincian Status Unit per Lokasi Bengkel</h6>
+                <div class="card bg-white p-3 h-100">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-chart-pie text-primary me-2"></i>
+                        <h6 class="text-dark fw-bold mb-0" style="font-size: 13px;">Rincian Status Unit per Lokasi Bengkel</h6>
+                    </div>
                     <div id="statBengkelContainer" class="row g-2">
                         <span class="text-muted small fst-italic">Memuat data lokasi bengkel...</span>
                     </div>
@@ -152,47 +253,53 @@
             </div>
         </div>
 
-        <!-- Filter Section -->
-        <div class="row g-2 mb-3 bg-white p-3 rounded shadow-sm">
-            <div class="col-12 col-md-4">
-                <label class="form-label small text-muted mb-1">Filter Lokasi Bengkel:</label>
-                <select class="form-select form-select-sm" id="filterBengkel" onchange="jalankanFilter()">
-                    <option value="">Semua Lokasi Bengkel</option>
-                </select>
-            </div>
-            <div class="col-12 col-md-4">
-                <label class="form-label small text-muted mb-1">Filter Unit:</label>
-                <select class="form-select form-select-sm" id="filterUnit" onchange="jalankanFilter()">
-                    <option value="">Semua Unit</option>
-                </select>
-            </div>
-            <div class="col-12 col-md-4">
-                <label class="form-label small text-muted mb-1">Filter Status Pengerjaan:</label>
-                <select class="form-select form-select-sm" id="filterStatus" onchange="jalankanFilter()">
-                    <option value="">Semua Status</option>
-                    <option value="Antre">Antre</option>
-                    <option value="Dalam Pengerjaan">Dalam Pengerjaan</option>
-                    <option value="Menunggu Sparepart">Menunggu Sparepart</option>
-                    <option value="Selesai">Selesai</option>
-                </select>
-            </div>
-            <div class="col-12 d-flex justify-content-end mt-2">
-                <button class="btn btn-outline-secondary btn-sm px-4" onclick="resetFilter()"><i class="fas fa-redo me-1"></i> Reset Filter</button>
+        <!-- Filter Section Modern -->
+        <div class="card p-3 mb-4 bg-white shadow-sm">
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label small fw-semibold text-muted mb-1">Lokasi Bengkel</label>
+                    <select class="form-select form-select-sm" id="filterBengkel" onchange="jalankanFilter()">
+                        <option value="">Semua Lokasi Bengkel</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label small fw-semibold text-muted mb-1">Unit Kerja</label>
+                    <select class="form-select form-select-sm" id="filterUnit" onchange="jalankanFilter()">
+                        <option value="">Semua Unit</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label small fw-semibold text-muted mb-1">Status Pengerjaan</label>
+                    <select class="form-select form-select-sm" id="filterStatus" onchange="jalankanFilter()">
+                        <option value="">Semua Status</option>
+                        <option value="Antre">Antre</option>
+                        <option value="Dalam Pengerjaan">Dalam Pengerjaan</option>
+                        <option value="Menunggu Sparepart">Menunggu Sparepart</option>
+                        <option value="Selesai">Selesai</option>
+                    </select>
+                </div>
+                <div class="col-12 d-flex justify-content-end align-items-center pt-1">
+                    <button class="btn btn-light btn-sm text-secondary border px-3" onclick="resetFilter()">
+                        <i class="fas fa-rotate-left me-1"></i> Reset Filter
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- Tabel Daftar Mobil -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
-                <h5 class="mb-0 fw-bold fs-6"><i class="fas fa-list me-2"></i>Daftar Kendaraan Masuk</h5>
-                <button class="btn btn-secondary btn-sm w-100 w-md-auto" onclick="cetakLaporanBelumSelesai()">
+        <!-- Tabel Daftar Mobil dengan Scroll Tersendiri -->
+        <div class="card bg-white shadow-sm overflow-hidden mb-4">
+            <div class="card-header bg-white py-3 px-4 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 border-bottom">
+                <h5 class="mb-0 fw-bold text-dark" style="font-size: 16px;">
+                    <i class="fas fa-list-check text-primary me-2"></i>Daftar Kendaraan Masuk
+                </h5>
+                <button class="btn btn-dark btn-sm w-100 w-md-auto shadow-sm" onclick="cetakLaporanBelumSelesai()">
                     <i class="fas fa-print me-1"></i> Cetak PDF Unit Belum Selesai
                 </button>
             </div>
             <div class="card-body p-0">
-                <div class="table-responsive">
+                <div class="table-responsive table-scroll-container">
                     <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
+                        <thead>
                             <tr>
                                 <th>Foto</th>
                                 <th>Tanggal Masuk</th>
@@ -213,6 +320,18 @@
             </div>
         </div>
     </div>
+
+    <!-- Footer Modern -->
+    <footer class="no-print">
+        <div class="container text-center text-md-start d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+            <div>
+                <span class="fw-bold text-dark">Aplikasi Manajemen Bengkel</span> &copy; 2026 PT Kurnia Tunggal Nugraha.
+            </div>
+            <div class="text-muted small">
+                Dikembangkan oleh <span class="fw-semibold text-dark">Muhammad Arya Putra Perdana</span> | Sistem Sinkronisasi Online Google Drive
+            </div>
+        </div>
+    </footer>
 
     <!-- AREA CETAK LAPORAN -->
     <div id="printReportArea" style="display: none;">
@@ -242,7 +361,6 @@
                 </div>
             </div>
 
-            <!-- Posisi fleksibel mengikuti konten rekap di atasnya -->
             <div class="mt-4 fst-italic pb-2" style="color: #000; font-size: 14px;">
                 Berikut saya lampirkan juga foto - foto kendaraanya
             </div>
@@ -257,18 +375,18 @@
     <!-- Modal Kelola Master Bengkel -->
     <div class="modal fade" id="modalMasterBengkel" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fs-6"><i class="fas fa-warehouse me-2"></i>Kelola Referensi Master Bengkel</h5>
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold fs-6"><i class="fas fa-warehouse me-2 text-primary"></i>Kelola Referensi Master Bengkel</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <div class="input-group mb-3">
                         <input type="text" class="form-control" id="inputNamaBengkelBaru" placeholder="Nama Bengkel Baru...">
-                        <button class="btn btn-success" type="button" onclick="tambahMasterBengkel()"><i class="fas fa-plus me-1"></i> Tambah</button>
+                        <button class="btn btn-success px-3" type="button" onclick="tambahMasterBengkel()"><i class="fas fa-plus me-1"></i> Tambah</button>
                     </div>
-                    <label class="form-label small text-muted">Daftar Referensi Bengkel Saat Ini:</label>
-                    <ul class="list-group" id="listMasterBengkel" style="max-height: 250px; overflow-y: auto;"></ul>
+                    <label class="form-label small text-muted fw-semibold">Daftar Referensi Bengkel Saat Ini:</label>
+                    <ul class="list-group border rounded" id="listMasterBengkel" style="max-height: 250px; overflow-y: auto;"></ul>
                 </div>
             </div>
         </div>
@@ -277,39 +395,39 @@
     <!-- Modal Tambah Mobil -->
     <div class="modal fade" id="modalTambah" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fs-6"><i class="fas fa-plus-circle me-2"></i>Tambah Mobil Masuk</h5>
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold fs-6"><i class="fas fa-plus-circle me-2 text-primary"></i>Tambah Mobil Masuk</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <div class="mb-3">
-                        <label class="form-label">Tanggal Masuk</label>
+                        <label class="form-label small fw-semibold">Tanggal Masuk</label>
                         <input type="date" class="form-control" id="tanggalMasuk">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Nomor Polisi (Plat)</label>
+                        <label class="form-label small fw-semibold">Nomor Polisi (Plat)</label>
                         <input type="text" class="form-control" id="platNomor" placeholder="Contoh: B 1234 XYZ">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Merk / Tipe Mobil</label>
+                        <label class="form-label small fw-semibold">Merk / Tipe Mobil</label>
                         <input type="text" class="form-control" id="tipeMobil" placeholder="Contoh: Ford EcoSport">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Unit</label>
+                        <label class="form-label small fw-semibold">Unit</label>
                         <input type="text" class="form-control" id="lokasiKerja" placeholder="Contoh: Unit A / Bagian Tertentu">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Lokasi Bengkel</label>
+                        <label class="form-label small fw-semibold">Lokasi Bengkel</label>
                         <input class="form-control" list="daftarBengkel" id="lokasiBengkel" placeholder="Pilih atau ketik lokasi bengkel...">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Progres Perbaikan</label>
+                        <label class="form-label small fw-semibold">Progres Perbaikan</label>
                         <textarea class="form-control" id="keteranganPerbaikan" rows="3" placeholder="Contoh: Perbaikan AC dan ganti kampas rem"></textarea>
                     </div>
                     
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Foto Kendaraan / Kerusakan</label>
+                    <div class="mb-4">
+                        <label class="form-label small fw-semibold">Foto Kendaraan / Kerusakan</label>
                         <div class="row g-2">
                             <div class="col-6">
                                 <label class="btn btn-outline-primary btn-sm w-100 py-2">
@@ -324,10 +442,10 @@
                                 </label>
                             </div>
                         </div>
-                        <div id="infoFotoTerpilih" class="text-success small mt-1 fst-italic text-center"></div>
+                        <div id="infoFotoTerpilih" class="text-success small mt-2 fst-italic text-center"></div>
                     </div>
 
-                    <button type="button" class="btn btn-primary w-100" onclick="simpanDataBaru()">Simpan Data Mobil</button>
+                    <button type="button" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm" onclick="simpanDataBaru()">Simpan Data Mobil</button>
                 </div>
             </div>
         </div>
@@ -336,26 +454,26 @@
     <!-- Modal Update Status & Detail Pengerjaan -->
     <div class="modal fade" id="modalDetail" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fs-6"><i class="fas fa-info-circle me-2"></i>Detail Kendaraan & Perbaikan</h5>
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold fs-6"><i class="fas fa-info-circle me-2 text-primary"></i>Detail Kendaraan & Perbaikan</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <input type="hidden" id="detailId">
                     
-                    <div class="text-center mb-3">
-                        <img id="lblFoto" src="" alt="Foto Kendaraan" class="img-fluid rounded border mb-2" style="max-height: 200px; display: none;">
+                    <div class="text-center mb-4">
+                        <img id="lblFoto" src="" alt="Foto Kendaraan" class="img-fluid rounded border mb-2 shadow-sm" style="max-height: 200px; display: none;">
                         <div class="mt-2">
-                            <label class="form-label small text-muted">Ganti / Perbarui Foto:</label>
-                            <div class="row g-2">
-                                <div class="col-6">
+                            <label class="form-label small text-muted fw-semibold">Ganti / Perbarui Foto:</label>
+                            <div class="row g-2 justify-content-center">
+                                <div class="col-6 col-sm-4">
                                     <label class="btn btn-outline-primary btn-sm w-100 py-1">
                                         <i class="fas fa-camera me-1"></i> Kamera
                                         <input type="file" accept="image/*" capture="environment" class="d-none" onchange="prosesFotoPilihan(this, 'infoFotoEditTerpilih')">
                                     </label>
                                 </div>
-                                <div class="col-6">
+                                <div class="col-6 col-sm-4">
                                     <label class="btn btn-outline-secondary btn-sm w-100 py-1">
                                         <i class="fas fa-image me-1"></i> Galeri
                                         <input type="file" accept="image/*" class="d-none" onchange="prosesFotoPilihan(this, 'infoFotoEditTerpilih')">
@@ -368,37 +486,37 @@
 
                     <div class="row mb-3">
                         <div class="col-12 col-md-6 mb-2 mb-md-0">
-                            <label class="form-label">Tanggal Masuk</label>
+                            <label class="form-label small fw-semibold">Tanggal Masuk</label>
                             <input type="date" class="form-control" id="editTanggalMasuk">
                         </div>
                         <div class="col-12 col-md-6">
-                            <label class="form-label">Lokasi Bengkel</label>
+                            <label class="form-label small fw-semibold">Lokasi Bengkel</label>
                             <input class="form-control" list="daftarBengkel" id="editLokasiBengkel" placeholder="Pilih atau ketik lokasi bengkel...">
                         </div>
                     </div>
 
                     <!-- Input Edit Plat, Unit, dan Tipe Kendaraan -->
-                    <div class="row mb-3 bg-light p-2 rounded mx-0 g-2">
+                    <div class="row mb-3 bg-light p-3 rounded mx-0 g-2 border">
                         <div class="col-12 col-md-4">
-                            <label class="form-label small text-muted mb-1">Nomor Plat:</label>
-                            <input type="text" class="form-control form-control-sm fw-bold" id="editPlatNomor">
+                            <label class="form-label small text-muted mb-1 fw-semibold">Nomor Plat:</label>
+                            <input type="text" class="form-control form-control-sm fw-bold text-dark" id="editPlatNomor">
                         </div>
                         <div class="col-12 col-md-4">
-                            <label class="form-label small text-muted mb-1">Unit:</label>
-                            <input type="text" class="form-control form-control-sm fw-bold" id="editLokasiKerja">
+                            <label class="form-label small text-muted mb-1 fw-semibold">Unit:</label>
+                            <input type="text" class="form-control form-control-sm fw-bold text-dark" id="editLokasiKerja">
                         </div>
                         <div class="col-12 col-md-4">
-                            <label class="form-label small text-muted mb-1">Merk / Tipe Mobil:</label>
-                            <input type="text" class="form-control form-control-sm fw-bold" id="editTipeMobil">
+                            <label class="form-label small text-muted mb-1 fw-semibold">Merk / Tipe Mobil:</label>
+                            <input type="text" class="form-control form-control-sm fw-bold text-dark" id="editTipeMobil">
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Progres Perbaikan</label>
+                        <label class="form-label small fw-semibold">Progres Perbaikan</label>
                         <textarea class="form-control" id="editKeteranganPerbaikan" rows="3"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Status Pengerjaan</label>
+                        <label class="form-label small fw-semibold">Status Pengerjaan</label>
                         <select class="form-select" id="statusPengerjaan">
                             <option value="Antre">Antre</option>
                             <option value="Dalam Pengerjaan">Dalam Pengerjaan</option>
@@ -407,8 +525,8 @@
                         </select>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary w-100" onclick="simpanPerubahan()"><i class="fas fa-save me-1"></i> Simpan Perubahan</button>
+                <div class="modal-footer border-top px-4 py-3">
+                    <button type="button" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm" onclick="simpanPerubahan()"><i class="fas fa-save me-1"></i> Simpan Perubahan</button>
                 </div>
             </div>
         </div>
@@ -518,7 +636,7 @@
         }
 
         function muatDataDariGoogleDrive() {
-            document.getElementById('syncStatus').className = 'badge bg-warning text-dark me-2';
+            document.getElementById('syncStatus').className = 'badge bg-warning text-dark px-2 py-1';
             document.getElementById('syncStatus').innerText = 'Menyinkronkan...';
 
             fetch(WEB_APP_URL)
@@ -550,19 +668,19 @@
                     updateFilterUnitOptions();
                     renderTabelDisesuaikan();
 
-                    document.getElementById('syncStatus').className = 'badge bg-success me-2';
+                    document.getElementById('syncStatus').className = 'badge bg-success px-2 py-1';
                     document.getElementById('syncStatus').innerText = 'Online';
                 })
                 .catch(error => {
                     console.error('Gagal memuat data:', error);
-                    document.getElementById('syncStatus').className = 'badge bg-danger me-2';
+                    document.getElementById('syncStatus').className = 'badge bg-danger px-2 py-1';
                     document.getElementById('syncStatus').innerText = 'Gagal Koneksi';
                     document.getElementById('tabelMobil').innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">Gagal terhubung ke Google Drive. Periksa koneksi internet Anda.</td></tr>`;
                 });
         }
 
         function kirimAksiKeDriveBackground(action, rowData) {
-            document.getElementById('syncStatus').className = 'badge bg-warning text-dark me-2';
+            document.getElementById('syncStatus').className = 'badge bg-warning text-dark px-2 py-1';
             document.getElementById('syncStatus').innerText = 'Menyimpan...';
 
             fetch(WEB_APP_URL, {
@@ -574,12 +692,12 @@
                 body: JSON.stringify({ action: action, data: rowData })
             })
             .then(() => {
-                document.getElementById('syncStatus').className = 'badge bg-success me-2';
+                document.getElementById('syncStatus').className = 'badge bg-success px-2 py-1';
                 document.getElementById('syncStatus').innerText = 'Online';
             })
             .catch(error => {
                 console.error('Gagal sinkronisasi background:', error);
-                document.getElementById('syncStatus').className = 'badge bg-danger me-2';
+                document.getElementById('syncStatus').className = 'badge bg-danger px-2 py-1';
                 document.getElementById('syncStatus').innerText = 'Offline';
             });
         }
@@ -595,13 +713,13 @@
             const listEl = document.getElementById('listMasterBengkel');
             listEl.innerHTML = '';
             if (masterBengkel.length === 0) {
-                listEl.innerHTML = `<li class="list-group-item text-muted small fst-italic text-center">Belum ada referensi bengkel.</li>`;
+                listEl.innerHTML = `<li class="list-group-item text-muted small fst-italic text-center border-0 py-3">Belum ada referensi bengkel.</li>`;
                 return;
             }
             masterBengkel.forEach((bengkel, index) => {
                 listEl.innerHTML += `
-                    <li class="list-group-item d-flex justify-content-between align-items-center py-2">
-                        <span>${bengkel}</span>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 border-bottom">
+                        <span class="fw-medium">${bengkel}</span>
                         <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="hapusMasterBengkel(${index})"><i class="fas fa-trash"></i></button>
                     </li>
                 `;
@@ -782,9 +900,9 @@
 
                     bengkelContainer.innerHTML += `
                         <div class="col-12 col-sm-6">
-                            <div class="border rounded px-3 py-2 bg-light">
+                            <div class="border rounded-3 px-3 py-2 bg-light">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <strong class="text-dark small"><i class="fas fa-warehouse me-1"></i> ${b}</strong>
+                                    <strong class="text-dark small"><i class="fas fa-warehouse me-1 text-secondary"></i> ${b}</strong>
                                     <span class="badge bg-primary">${dataB.total} Unit</span>
                                 </div>
                                 <div class="text-muted" style="font-size: 11px;">
@@ -799,7 +917,7 @@
             if (dataFiltered.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">Tidak ada kendaraan yang sesuai dengan filter.</td></tr>`;
                 document.getElementById('statTotal').innerText = total;
-                document.getElementById('statProsesSub').innerText = `Aktif di bengkel: ${belumSelesaiList.length}`;
+                document.getElementById('statProsesSub').innerText = `Aktif: ${belumSelesaiList.length}`;
                 return;
             }
 
@@ -811,7 +929,7 @@
                 if (statusVal === 'Menunggu Sparepart') badgeColor = 'bg-info text-dark';
                 if (statusVal === 'Selesai') badgeColor = 'bg-success';
 
-                let imgThumbnail = m.foto ? `<img src="${m.foto}" class="rounded" style="width: 40px; height: 40px; object-fit: cover;">` : `<span class="text-muted small">No Foto</span>`;
+                let imgThumbnail = m.foto ? `<img src="${m.foto}" class="rounded shadow-sm" style="width: 40px; height: 40px; object-fit: cover;">` : `<span class="text-muted small">No Foto</span>`;
 
                 let tglVal = formatTanggalID(m.tanggal);
                 let durasiStr = hitungDurasiHari(m.tanggal);
@@ -833,15 +951,15 @@
                         <td><span class="badge bg-light text-dark border" style="font-size: 11px;"><i class="fas fa-clock text-primary me-1"></i>${durasiStr}</span></td>
                         <td><span class="badge ${badgeColor}">${statusVal}</span></td>
                         <td class="text-center">
-                            <button class="btn btn-sm btn-outline-primary me-1 px-2 py-1" onclick="bukaDetail('${m.id}')"><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-sm btn-outline-danger px-2 py-1" onclick="hapusMobil('${m.id}')"><i class="fas fa-trash"></i></button>
+                            <button class="btn btn-sm btn-outline-primary me-1 px-2 py-1 shadow-sm" onclick="bukaDetail('${m.id}')"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-outline-danger px-2 py-1 shadow-sm" onclick="hapusMobil('${m.id}')"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
             });
 
             document.getElementById('statTotal').innerText = total;
-            document.getElementById('statProsesSub').innerText = `Aktif di bengkel: ${belumSelesaiList.length}`;
+            document.getElementById('statProsesSub').innerText = `Aktif: ${belumSelesaiList.length}`;
         }
 
         function bukaDetail(id) {
