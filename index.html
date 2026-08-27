@@ -30,10 +30,10 @@
             vertical-align: middle !important;
         }
 
-        /* Styling Khusus untuk Mode Cetak / PDF (Responsif HP & Komputer) */
+        /* Styling Khusus untuk Mode Cetak / PDF Versi Lama (Stabil di Komputer) */
         @media print {
             @page {
-                size: A4 portrait;
+                size: legal;
                 margin: 10mm;
             }
             body * {
@@ -58,29 +58,40 @@
                 page-break-after: always;
                 break-after: page;
                 width: 100%;
-                margin: 0 auto;
-                padding: 10mm 5mm;
+                max-width: 16cm;
+                margin-left: auto;
+                margin-right: auto;
+                min-height: 94vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
                 box-sizing: border-box;
+                padding-bottom: 5mm;
             }
 
             .print-page-group {
-                display: block;
-                width: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                min-height: 92vh;
                 page-break-after: always;
                 break-after: page;
                 box-sizing: border-box;
-                padding: 10mm 0;
+                padding-top: 5mm;
+                padding-bottom: 5mm;
             }
 
             .print-card {
                 page-break-inside: avoid;
                 break-inside: avoid;
-                border: 1px solid #ccc !important;
-                background: #fff !important;
+                border: none !important;
+                background: transparent !important;
                 box-shadow: none !important;
-                margin-bottom: 6mm !important;
-                padding: 10px !important;
+                margin-bottom: 4mm !important;
+                padding: 1mm !important;
                 width: 100%;
+                max-width: 14cm;
             }
             
             .print-card-title {
@@ -88,13 +99,10 @@
                 font-weight: 800 !important;
             }
 
-            /* Gambar diset responsif agar proporsional di layar besar (PC) maupun kecil (HP) */
             .print-card img {
-                width: 100% !important;
-                max-height: 85mm !important;
-                object-fit: contain !important;
-                display: block;
-                margin: 0 auto;
+                width: 12.5cm !important;
+                height: 6.8cm !important;
+                object-fit: cover !important;
             }
         }
     </style>
@@ -1005,14 +1013,14 @@
                 
                 group.forEach((m, idxInGroup) => {
                     let globalIndex = (pageIndex * 3) + idxInGroup;
-                    let imgPrint = m.foto ? `<img src="${m.foto}" class="rounded" style="width: 100%; max-height: 85mm; object-fit: contain;">` : `<div class="rounded d-flex align-items-center justify-content-center text-muted fst-italic bg-light" style="width: 100%; height: 50mm; margin: 0 auto;">Tidak ada foto</div>`;
+                    let imgPrint = m.foto ? `<img src="${m.foto}" class="rounded" style="width: 12.5cm; height: 6.8cm; object-fit: cover;">` : `<div class="rounded d-flex align-items-center justify-content-center text-muted fst-italic bg-light" style="width: 12.5cm; height: 6.8cm; margin: 0 auto;">Tidak ada foto</div>`;
                     
                     let tglClean = formatTanggalID(m.tanggal);
                     let durasiCetak = hitungDurasiHari(m.tanggal);
                     let namaBengkelUnit = m.bengkel ? m.bengkel.toUpperCase() : 'TIDAK DIKETAHUI';
 
                     groupHtml += `
-                        <div class="print-card card p-2 mb-2">
+                        <div class="print-card card p-1 mb-1">
                             <div class="print-card-title mb-1" style="font-size: 11px; color: #000;">UNIT #${globalIndex + 1} - PLAT: ${m.plat || '-'} (${m.tipe || '-'})</div>
                             
                             <div class="text-center mb-1">
