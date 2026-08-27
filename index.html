@@ -485,11 +485,16 @@
                     dataMobil = Array.isArray(data) ? data : [];
                     
                     dataMobil.forEach(m => {
-                    if (m.tanggal) {
+                        if (m.tanggal) {
                             let strTgl = m.tanggal.toString();
-                            // Jika tanggal mengandung 2001 atau tidak valid, amankan dengan tanggal hari ini atau biarkan formatnya
-                            if (strTgl.includes('2001')) {
-                                m.tanggal = new Date().toISOString().split('T')[0];
+                            if (strTgl.includes('2001') || isNaN(new Date(strTgl).getTime()) || strTgl.length < 8) {
+                                let parsed = new Date(Date.parse(strTgl + " 2026"));
+                                if (!isNaN(parsed.getTime())) {
+                                    let y = parsed.getFullYear();
+                                    let mo = String(parsed.getMonth() + 1).padStart(2, '0');
+                                    let da = String(parsed.getDate()).padStart(2, '0');
+                                    m.tanggal = `${y}-${mo}-${da}`;
+                                }
                             }
                         }
                     });
@@ -1049,22 +1054,22 @@
 
                             <div class="row border-top border-bottom py-1 mb-1 bg-light" style="font-size: 11px; color: #000;">
                                 <div class="col-4 border-end">
-                                    <span class="d-block" style="font-size: 9px; color: #333;">Tanggal Masuk & Durasi:</span>
-                                    <strong style="color: #000;">${tglClean} (${durasiCetak})</strong>
+                                    <span class="d-block" style="font-size: 9px; color: #333;">Tanggal Masuk:</span>
+                                    <strong style="color: #000;">${tglClean}</strong>
                                 </div>
                                 <div class="col-4 border-end">
                                     <span class="d-block" style="font-size: 9px; color: #333;">Unit:</span>
                                     <strong style="color: #000;">${m.lokasi || '-'}</strong>
                                 </div>
                                 <div class="col-4">
-                                    <span class="d-block" style="font-size: 9px; color: #333;">Lokasi Bengkel:</span>
-                                    <strong style="color: #000;">${namaBengkelUnit}</strong>
+                                    <span class="d-block" style="font-size: 9px; color: #333;">Durasi di Bengkel:</span>
+                                    <strong style="color: #000;">${durasiCetak}</strong>
                                 </div>
                             </div>
 
                             <div class="row" style="font-size: 11px; color: #000;">
                                 <div class="col-8">
-                                    <span class="d-block" style="font-size: 9px; color: #333;">Progres Perbaikan:</span>
+                                    <span class="d-block" style="font-size: 9px; color: #333;">Progres Perbaikan & Lokasi Bengkel (${namaBengkelUnit}):</span>
                                     <div class="p-1 border rounded bg-white" style="min-height: 25px; font-size: 11px; color: #000;">${m.keterangan || '-'}</div>
                                 </div>
                                 <div class="col-4">
