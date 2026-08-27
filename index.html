@@ -485,16 +485,11 @@
                     dataMobil = Array.isArray(data) ? data : [];
                     
                     dataMobil.forEach(m => {
-                        if (m.tanggal) {
+                    if (m.tanggal) {
                             let strTgl = m.tanggal.toString();
-                            if (strTgl.includes('2001') || isNaN(new Date(strTgl).getTime()) || strTgl.length < 8) {
-                                let parsed = new Date(Date.parse(strTgl + " 2026"));
-                                if (!isNaN(parsed.getTime())) {
-                                    let y = parsed.getFullYear();
-                                    let mo = String(parsed.getMonth() + 1).padStart(2, '0');
-                                    let da = String(parsed.getDate()).padStart(2, '0');
-                                    m.tanggal = `${y}-${mo}-${da}`;
-                                }
+                            // Jika tanggal mengandung 2001 atau tidak valid, amankan dengan tanggal hari ini atau biarkan formatnya
+                            if (strTgl.includes('2001')) {
+                                m.tanggal = new Date().toISOString().split('T')[0];
                             }
                         }
                     });
