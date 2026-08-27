@@ -33,7 +33,7 @@
         /* Styling Khusus untuk Mode Cetak / PDF Bawaan Browser */
         @media print {
             @page {
-                size: legal;
+                size: A4 portrait;
                 margin: 10mm;
             }
             body * {
@@ -58,23 +58,15 @@
                 page-break-after: always;
                 break-after: page;
                 width: 100%;
-                max-width: 16cm;
-                margin-left: auto;
-                margin-right: auto;
-                min-height: 94vh;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-                box-sizing: border-box;
+                max-width: 100%;
+                margin: 0 auto;
+                padding-top: 5mm;
                 padding-bottom: 5mm;
             }
 
             .print-page-group {
-                display: flex;
-                flex-direction: column;
-                justify-content: flex-start;
-                align-items: center;
-                min-height: 92vh;
+                display: block;
+                width: 100%;
                 page-break-after: always;
                 break-after: page;
                 box-sizing: border-box;
@@ -85,13 +77,12 @@
             .print-card {
                 page-break-inside: avoid;
                 break-inside: avoid;
-                border: none !important;
-                background: transparent !important;
+                border: 1px solid #ddd !important;
+                background: #fff !important;
                 box-shadow: none !important;
-                margin-bottom: 4mm !important;
-                padding: 1mm !important;
+                margin-bottom: 5mm !important;
+                padding: 6px !important;
                 width: 100%;
-                max-width: 14cm;
             }
             
             .print-card-title {
@@ -100,9 +91,9 @@
             }
 
             .print-card img {
-                width: 12.5cm !important;
-                height: 6.8cm !important;
-                object-fit: cover !important;
+                width: 100% !important;
+                max-height: 6cm !important;
+                object-fit: contain !important;
             }
         }
     </style>
@@ -1013,21 +1004,20 @@
                 
                 group.forEach((m, idxInGroup) => {
                     let globalIndex = (pageIndex * 3) + idxInGroup;
-                    let imgPrint = m.foto ? `<img src="${m.foto}" class="rounded" style="width: 12.5cm; height: 6.8cm; object-fit: cover;">` : `<div class="rounded d-flex align-items-center justify-content-center text-muted fst-italic bg-light" style="width: 12.5cm; height: 6.8cm; margin: 0 auto;">Tidak ada foto</div>`;
+                    let imgPrint = m.foto ? `<img src="${m.foto}" class="rounded" style="width: 100%; max-height: 6cm; object-fit: contain;">` : `<div class="rounded d-flex align-items-center justify-content-center text-muted fst-italic bg-light" style="width: 100%; height: 5cm; margin: 0 auto;">Tidak ada foto</div>`;
                     
                     let tglClean = formatTanggalID(m.tanggal);
                     let durasiCetak = hitungDurasiHari(m.tanggal);
                     let namaBengkelUnit = m.bengkel ? m.bengkel.toUpperCase() : 'TIDAK DIKETAHUI';
 
                     groupHtml += `
-                        <div class="print-card card p-1 mb-1">
+                        <div class="print-card card p-2 mb-2">
                             <div class="print-card-title mb-1" style="font-size: 11px; color: #000;">UNIT #${globalIndex + 1} - PLAT: ${m.plat || '-'} (${m.tipe || '-'})</div>
                             
                             <div class="text-center mb-1">
                                 ${imgPrint}
                             </div>
 
-                            <!-- URUTAN CETAK: Tanggal Masuk, Unit, Lokasi Bengkel -->
                             <div class="row border-top border-bottom py-1 mb-1 bg-light" style="font-size: 11px; color: #000;">
                                 <div class="col-4 border-end">
                                     <span class="d-block" style="font-size: 9px; color: #333;">Tanggal Masuk:</span>
@@ -1043,7 +1033,6 @@
                                 </div>
                             </div>
 
-                            <!-- URUTAN CETAK: Progres Perbaikan, Durasi di Bengkel, Status Pengerjaan -->
                             <div class="row" style="font-size: 11px; color: #000;">
                                 <div class="col-5 border-end">
                                     <span class="d-block" style="font-size: 9px; color: #333;">Progres Perbaikan:</span>
